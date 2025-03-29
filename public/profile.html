@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ваш профиль</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .profile-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        .logout-btn {
+            background: #7494ec;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <h1>Добро пожаловать, <span id="username"></span>!</h1>
+        <p>Вы успешно вошли в систему.</p>
+        <button class="logout-btn" onclick="logout()">Выйти</button>
+    </div>
+
+    <script>
+        // Отображаем имя пользователя
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (!userData) window.location.href = '/';
+        document.getElementById('username').textContent = userData.username;
+
+        // Функция выхода
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

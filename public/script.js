@@ -1,3 +1,5 @@
+// const { json } = require("body-parser");
+
 const container = document.querySelector('.container')
 const registerBtn = document.querySelector('.register-btn')
 const loginBtn = document.querySelector('.login-btn')
@@ -15,6 +17,7 @@ loginBtn.addEventListener('click',() => {
 // Отправка формы входа
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    console.log('Начало обработки входа');
     const username = document.querySelector('.login input[type="text"]').value;
     const password = document.querySelector('.login input[type="password"]').value;
     
@@ -23,18 +26,28 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
+        credentials: 'include'
       });
-      
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Ошибка сервера');
+      }
+    
       const data = await response.json();
-      
+      console.log('Данные ответа:', data);
+
       if (data.success) {
+        console.log('Сохранение пользователя:', data.user);
         alert('Вход выполнен!');
-        // Можно перенаправить пользователя: window.location.href = '/profile.html';
+        localStorage.setItem('user', JSON.stringify(data.user));//перенаправляем на profile.html
+        console.log('Перенаправляем...');
+        window.location.href = 'http://localhost:3000/profile.html';
       } else {
-        alert(data.error || 'Ошибка входа');
+        alert(data.error || 'Неверный email или пароль');
       }
     } catch (error) {
-      console.error('Ошибка:', error);
+      console.error('Полная Ошибка:', error);
       alert('Что-то пошло не так');
     }
   });

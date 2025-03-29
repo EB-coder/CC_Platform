@@ -7,9 +7,14 @@ const { Pool } = require('pg');
 const app = express();
 const port = 3000;
 const path = require('path');
-// Настройки
 
-app.use(cors());
+
+// Настройки
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: ['GET','POST'],
+    credentials: true
+}));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public'))); // Указываем путь к HTML/CSS/JS
 
@@ -62,22 +67,26 @@ app.post('/register', async (req, res) => {
 // Вход
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
+  console.log('Получен запрос на вход:', req.body);
   
   try {
     const user = await pool.query(
-      'SELECT * FROM users WHERE username = $1 AND password = $2',
+      'SELECT id, username, email FROM users WHERE email = $1 AND password = $2',
       [username, password]
     );
     
     if (user.rows.length === 0) {
       return res.status(401).json({ error: 'Неверный логин или пароль' });
     }
-    
     res.json({ success: true, user: user.rows[0] });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
+});
+
+app.get('/profile.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/profile.html'));
 });
 
 // Запуск сервера
