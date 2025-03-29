@@ -36,11 +36,21 @@ pool.query('SELECT NOW()', (err, res) => {
   }
 });
 
+// Функция проверки email
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!re.test(email)) {
+      throw new Error('Некорректный формат email');
+    }
+  }
+
 // Регистрация
 app.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
   
   try {
+    // Серверная проверка email
+    validateEmail(email);
     // Проверяем, нет ли такого пользователя
     const checkUser = await pool.query(
       'SELECT * FROM users WHERE  email = $1',
@@ -70,6 +80,8 @@ app.post('/login', async (req, res) => {
   console.log('Получен запрос на вход:', req.body);
   
   try {
+    // Проверка email при входе
+    validateEmail(username);
     const user = await pool.query(
       'SELECT id, username, email FROM users WHERE email = $1 AND password = $2',
       [username, password]

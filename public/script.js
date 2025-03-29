@@ -10,7 +10,11 @@ registerBtn.addEventListener('click', () => {
 loginBtn.addEventListener('click', () => {
     container.classList.remove('active');
 });
-
+// Функция проверки email
+function isValidEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
 // Обработка формы входа по email
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -18,7 +22,13 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     
     const email = document.querySelector('.login input[type="text"]').value; // Получаем email
     const password = document.querySelector('.login input[type="password"]').value;
-    
+
+     // Клиентская проверка email
+    if (!isValidEmail(email)) {
+      alert('Пожалуйста, введите корректный email');
+      return;
+    }
+
     try {
         console.log('Отправка запроса на вход для email:', email);
         const response = await fetch('http://localhost:3000/login', {
@@ -67,6 +77,12 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     const username = document.querySelector('.register input[type="text"]').value;
     const email = document.querySelector('.register input[type="email"]').value;
     const password = document.querySelector('.register input[type="password"]').value;
+    
+    // Проверка email при регистрации
+    if (!isValidEmail(email)) {
+      alert('Пожалуйста, введите корректный email');
+      return;
+    }
     
     try {
         console.log('Отправка запроса на регистрацию для email:', email);
