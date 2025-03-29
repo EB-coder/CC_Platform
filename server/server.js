@@ -43,12 +43,12 @@ app.post('/register', async (req, res) => {
   try {
     // Проверяем, нет ли такого пользователя
     const checkUser = await pool.query(
-      'SELECT * FROM users WHERE username = $1 OR email = $2',
-      [username, email]
+      'SELECT * FROM users WHERE  email = $1',
+      [email]
     );
     
     if (checkUser.rows.length > 0) {
-      return res.status(400).json({ error: 'Пользователь уже существует' });
+      return res.status(400).json({ error: 'Пользователь c таким email уже существует' });
     }
     
     // Добавляем нового пользователя
@@ -76,7 +76,7 @@ app.post('/login', async (req, res) => {
     );
     
     if (user.rows.length === 0) {
-      return res.status(401).json({ error: 'Неверный логин или пароль' });
+      return res.status(401).json({ error: 'Неверный email или пароль' });
     }
     res.json({ success: true, user: user.rows[0] });
   } catch (err) {
