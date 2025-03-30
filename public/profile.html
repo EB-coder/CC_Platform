@@ -22,6 +22,7 @@
             padding: 20px;
             margin-bottom: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
         }
         .task-title {
             color: #3a86ff;
@@ -46,14 +47,19 @@
             border-radius: 10px;
             font-size: 0.8em;
         }
-        .search-container {
-            margin-bottom: 20px;
+        .controls-container {
             display: flex;
-            gap: 10px;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        input[type="text"] {
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        input[type="text"], select {
             padding: 8px;
-            width: 300px;
             border-radius: 5px;
             border: 1px solid #ddd;
         }
@@ -64,6 +70,9 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+        }
+        button:hover {
+            background: #5a7bd6;
         }
         .pagination {
             display: flex;
@@ -83,6 +92,18 @@
             align-items: center;
             padding: 0 15px;
         }
+        .solved-checkbox {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+        }
+        .solved {
+            background-color: #e6f7e6;
+            border-left: 4px solid #4CAF50;
+        }
+        .sort-arrow {
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -91,10 +112,38 @@
         <button onclick="logout()">Выйти</button>
     </div>
 
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Поиск по названию или тегам...">
-        <button onclick="applyFilters()">Поиск</button>
-        <button onclick="resetFilters()">Сбросить</button>
+    <div class="controls-container">
+        <div class="control-group">
+            <input type="text" id="searchInput" placeholder="Поиск по названию или тегам...">
+            <button onclick="applyFilters()">Поиск</button>
+            <button onclick="resetFilters()">Сбросить</button>
+        </div>
+        
+        <div class="control-group">
+            <label for="perPage">Задач на странице:</label>
+            <select id="perPage" onchange="changePerPage()">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="sortBy">Сортировка:</label>
+            <select id="sortBy" onchange="applySorting()">
+                <option value="default">По умолчанию</option>
+                <option value="rating-asc">Рейтинг (по возрастанию)</option>
+                <option value="rating-desc">Рейтинг (по убыванию)</option>
+                <option value="solved-asc">Решений (по возрастанию)</option>
+                <option value="solved-desc">Решений (по убыванию)</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="showSolved">Показать решенные:</label>
+            <input type="checkbox" id="showSolved" checked onchange="applyFilters()">
+        </div>
     </div>
 
     <div id="tasksContainer">
@@ -112,8 +161,11 @@
         let allTasks = [];
         let filteredTasks = [];
         let currentPage = 1;
-        const tasksPerPage = 10;
+        let tasksPerPage = 20;
         let currentSearchTerm = '';
+        let currentSort = 'default';
+        let showSolved = true;
+        let solvedTasks = JSON.parse(localStorage.getItem('solvedTasks')) || {};
 
         // Проверка авторизации
         const userData = JSON.parse(localStorage.getItem('user'));
@@ -129,20 +181,26 @@
                 const data = await response.json();
                 
                 if (data.status === 'OK') {
-                    allTasks = data.result.problems;
-                    filteredTasks = [...allTasks];
-                    currentPage = 1;
-                    displayTasks();
+                    allTasks = data.result.problems.map(task => ({
+                        ...task,
+                        id: `${task.contestId}${task.index}`,
+                        rating: task.rating || 0,
+                        solvedCount: task.solvedCount || 0
+                    }));
+                    applyFilters();
                 } else {
                     console.error('Ошибка загрузки задач:', data.comment);
                     // Попробуем напрямую, если прокси не работает
                     const directResponse = await fetch('https://codeforces.com/api/problemset.problems');
                     const directData = await directResponse.json();
                     if (directData.status === 'OK') {
-                        allTasks = directData.result.problems;
-                        filteredTasks = [...allTasks];
-                        currentPage = 1;
-                        displayTasks();
+                        allTasks = directData.result.problems.map(task => ({
+                            ...task,
+                            id: `${task.contestId}${task.index}`,
+                            rating: task.rating || 0,
+                            solvedCount: task.solvedCount || 0
+                        }));
+                        applyFilters();
                     } else {
                         document.getElementById('tasksContainer').innerHTML = '<p>Не удалось загрузить задачи. Попробуйте позже.</p>';
                     }
@@ -151,6 +209,65 @@
                 console.error('Ошибка:', error);
                 document.getElementById('tasksContainer').innerHTML = '<p>Ошибка при загрузке задач. Проверьте подключение к интернету.</p>';
             }
+        }
+
+        // Применение фильтров и сортировки
+        function applyFilters() {
+            currentSearchTerm = document.getElementById('searchInput').value.toLowerCase();
+            showSolved = document.getElementById('showSolved').checked;
+            
+            filteredTasks = allTasks.filter(task => {
+                const nameMatch = task.name.toLowerCase().includes(currentSearchTerm);
+                const tagsMatch = task.tags.some(tag => tag.toLowerCase().includes(currentSearchTerm));
+                const solvedMatch = showSolved || !solvedTasks[task.id];
+                return (nameMatch || tagsMatch) && solvedMatch;
+            });
+            
+            applySorting();
+        }
+
+        // Применение сортировки
+        function applySorting() {
+            currentSort = document.getElementById('sortBy').value;
+            
+            switch(currentSort) {
+                case 'rating-asc':
+                    filteredTasks.sort((a, b) => a.rating - b.rating);
+                    break;
+                case 'rating-desc':
+                    filteredTasks.sort((a, b) => b.rating - a.rating);
+                    break;
+                case 'solved-asc':
+                    filteredTasks.sort((a, b) => a.solvedCount - b.solvedCount);
+                    break;
+                case 'solved-desc':
+                    filteredTasks.sort((a, b) => b.solvedCount - a.solvedCount);
+                    break;
+                default:
+                    // Оставляем оригинальный порядок
+                    break;
+            }
+            
+            currentPage = 1;
+            displayTasks();
+        }
+
+        // Сброс фильтров
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('sortBy').value = 'default';
+            document.getElementById('showSolved').checked = true;
+            currentSearchTerm = '';
+            currentSort = 'default';
+            showSolved = true;
+            applyFilters();
+        }
+
+        // Изменение количества задач на странице
+        function changePerPage() {
+            tasksPerPage = parseInt(document.getElementById('perPage').value);
+            currentPage = 1;
+            displayTasks();
         }
 
         // Отображение задач с пагинацией
@@ -169,11 +286,14 @@
             
             tasksToShow.forEach(task => {
                 const taskElement = document.createElement('div');
-                taskElement.className = 'task-container';
+                taskElement.className = `task-container ${solvedTasks[task.id] ? 'solved' : ''}`;
                 
                 taskElement.innerHTML = `
+
                     <div class="task-title">
-                        ${task.contestId}${task.index} - ${task.name}
+                        <a href="/task.html?id=${task.id}" style="color: inherit; text-decoration: none;">
+                             ${task.id} - ${task.name}
+                        </a>
                     </div>
                     <div class="task-info">
                         <span>Рейтинг: ${task.rating || 'Не указан'}</span>
@@ -182,12 +302,28 @@
                     <div class="task-tags">
                         ${task.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                     </div>
+                    <label class="solved-checkbox">
+                        <input type="checkbox" ${solvedTasks[task.id] ? 'checked' : ''} 
+                               onchange="toggleSolved('${task.id}', this.checked)">
+                        Решено
+                    </label>
                 `;
                 
                 container.appendChild(taskElement);
             });
             
             updatePaginationControls();
+        }
+
+        // Переключение статуса "решено"
+        function toggleSolved(taskId, isSolved) {
+            if (isSolved) {
+                solvedTasks[taskId] = true;
+            } else {
+                delete solvedTasks[taskId];
+            }
+            localStorage.setItem('solvedTasks', JSON.stringify(solvedTasks));
+            applyFilters(); // Переприменяем фильтры (если скрываем решенные)
         }
 
         // Обновление элементов пагинации
@@ -208,29 +344,6 @@
                 currentPage = newPage;
                 displayTasks();
             }
-        }
-
-        // Применение фильтров
-        function applyFilters() {
-            currentSearchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
-            filteredTasks = allTasks.filter(task => {
-                const nameMatch = task.name.toLowerCase().includes(currentSearchTerm);
-                const tagsMatch = task.tags.some(tag => tag.toLowerCase().includes(currentSearchTerm));
-                return nameMatch || tagsMatch;
-            });
-            
-            currentPage = 1;
-            displayTasks();
-        }
-
-        // Сброс фильтров
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            currentSearchTerm = '';
-            filteredTasks = [...allTasks];
-            currentPage = 1;
-            displayTasks();
         }
 
         // Выход
