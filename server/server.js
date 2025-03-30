@@ -101,8 +101,6 @@ app.get('/profile.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/profile.html'));
 });
 
-//---------------------------------------------------------------
-// Добавьте этот роут в server.js
 app.get('/api/cf-problems', async (req, res) => {
     try {
         const response = await fetch('https://codeforces.com/api/problemset.problems');
@@ -113,7 +111,43 @@ app.get('/api/cf-problems', async (req, res) => {
         res.status(500).json({ error: 'Не удалось загрузить задачи' });
     }
 });
-//----------------------------------------------------------------
+//-------------------------------------------------------------------------
+// Маршрут для получения информации о задаче
+app.get('/api/task', async (req, res) => {
+    try {
+        const taskId = req.query.id;
+        // Здесь должен быть запрос к API Codeforces для получения полного условия
+        // Временная заглушка:
+        res.json({
+            success: true,
+            task: {
+                id: taskId,
+                title: `Задача ${taskId}`,
+                content: `Полное условие задачи ${taskId}...`,
+                rating: 1500,
+                solvedCount: 1234
+            }
+        });
+    } catch (err) {
+        console.error('Ошибка при запросе задачи:', err);
+        res.status(500).json({ error: 'Не удалось загрузить задачу' });
+    }
+});
+
+// Маршрут для отправки решения
+app.post('/api/submit', async (req, res) => {
+    try {
+        const { taskId, language, code } = req.body;
+        // Здесь должна быть логика отправки решения в Codeforces
+        console.log('Получено решение:', { taskId, language, code });
+        res.json({ success: true, message: 'Решение отправлено на проверку' });
+    } catch (err) {
+        console.error('Ошибка при отправке решения:', err);
+        res.status(500).json({ error: 'Не удалось отправить решение' });
+    }
+});
+
+//-------------------------------------------------------------------------------------
 
 // Запуск сервера
 app.listen(port, () => {
