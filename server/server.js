@@ -101,6 +101,20 @@ app.get('/profile.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/profile.html'));
 });
 
+//---------------------------------------------------------------
+// Добавьте этот роут в server.js
+app.get('/api/cf-problems', async (req, res) => {
+    try {
+        const response = await fetch('https://codeforces.com/api/problemset.problems');
+        const data = await response.json();
+        res.json(data);
+    } catch (err) {
+        console.error('Ошибка при запросе к Codeforces:', err);
+        res.status(500).json({ error: 'Не удалось загрузить задачи' });
+    }
+});
+//----------------------------------------------------------------
+
 // Запуск сервера
 app.listen(port, () => {
   console.log(`Сервер запущен на http://localhost:${port}`);

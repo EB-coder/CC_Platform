@@ -3,56 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ваш профиль</title>
+    <title>Codeforces Tasks</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+            padding: 20px;
+        }
+        .header {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            margin-bottom: 20px;
         }
-        .profile-container {
+        .task-container {
             background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            text-align: center;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        h1 {
-            color: #333;
+        .task-title {
+            color: #3a86ff;
+            font-size: 1.2em;
+            margin-bottom: 10px;
         }
-        .logout-btn {
+        .task-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        .task-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .tag {
+            background: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            width: 300px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        button {
+            padding: 8px 15px;
             background: #7494ec;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
+            border-radius: 5px;
             cursor: pointer;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-top: 20px;
+        }
+        .pagination button {
+            min-width: 80px;
+        }
+        .pagination button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .page-info {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
         }
     </style>
 </head>
 <body>
-    <div class="profile-container">
+    <div class="header">
         <h1>Добро пожаловать, <span id="username"></span>!</h1>
-        <p>Вы успешно вошли в систему.</p>
-        <button class="logout-btn" onclick="logout()">Выйти</button>
+        <button onclick="logout()">Выйти</button>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Поиск по названию или тегам...">
+        <button onclick="applyFilters()">Поиск</button>
+        <button onclick="resetFilters()">Сбросить</button>
+    </div>
+
+    <div id="tasksContainer">
+        <!-- Задачи будут загружены здесь -->
+    </div>
+
+    <div class="pagination">
+        <button id="prevPage" onclick="changePage(-1)">Назад</button>
+        <div class="page-info" id="pageInfo">Страница 1</div>
+        <button id="nextPage" onclick="changePage(1)">Вперед</button>
     </div>
 
     <script>
-        // Отображаем имя пользователя
+        // Глобальные переменные
+        let allTasks = [];
+        let filteredTasks = [];
+        let currentPage = 1;
+        const tasksPerPage = 10;
+        let currentSearchTerm = '';
+
+        // Проверка авторизации
         const userData = JSON.parse(localStorage.getItem('user'));
         if (!userData) window.location.href = '/';
         document.getElementById('username').textContent = userData.username;
 
-        // Функция выхода
+        // Загрузка задач
+        async function loadTasks() {
+            try {
+                document.getElementById('tasksContainer').innerHTML = '<p>Загрузка задач...</p>';
+                
+                const response = await fetch('/api/cf-problems');
+                const data = await response.json();
+                
+                if (data.status === 'OK') {
+                    allTasks = data.result.problems;
+                    filteredTasks = [...allTasks];
+                    currentPage = 1;
+                    displayTasks();
+                } else {
+                    console.error('Ошибка загрузки задач:', data.comment);
+                    // Попробуем напрямую, если прокси не работает
+                    const directResponse = await fetch('https://codeforces.com/api/problemset.problems');
+                    const directData = await directResponse.json();
+                    if (directData.status === 'OK') {
+                        allTasks = directData.result.problems;
+                        filteredTasks = [...allTasks];
+                        currentPage = 1;
+                        displayTasks();
+                    } else {
+                        document.getElementById('tasksContainer').innerHTML = '<p>Не удалось загрузить задачи. Попробуйте позже.</p>';
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                document.getElementById('tasksContainer').innerHTML = '<p>Ошибка при загрузке задач. Проверьте подключение к интернету.</p>';
+            }
+        }
+
+        // Отображение задач с пагинацией
+        function displayTasks() {
+            const container = document.getElementById('tasksContainer');
+            container.innerHTML = '';
+            
+            const startIndex = (currentPage - 1) * tasksPerPage;
+            const endIndex = startIndex + tasksPerPage;
+            const tasksToShow = filteredTasks.slice(startIndex, endIndex);
+            
+            if (tasksToShow.length === 0) {
+                container.innerHTML = '<p>Задачи не найдены. Попробуйте изменить параметры поиска.</p>';
+                return;
+            }
+            
+            tasksToShow.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = 'task-container';
+                
+                taskElement.innerHTML = `
+                    <div class="task-title">
+                        ${task.contestId}${task.index} - ${task.name}
+                    </div>
+                    <div class="task-info">
+                        <span>Рейтинг: ${task.rating || 'Не указан'}</span>
+                        <span>Решений: ${task.solvedCount || 'Неизвестно'}</span>
+                    </div>
+                    <div class="task-tags">
+                        ${task.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                `;
+                
+                container.appendChild(taskElement);
+            });
+            
+            updatePaginationControls();
+        }
+
+        // Обновление элементов пагинации
+        function updatePaginationControls() {
+            const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
+            document.getElementById('pageInfo').textContent = `Страница ${currentPage} из ${totalPages}`;
+            
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+        }
+
+        // Смена страницы
+        function changePage(delta) {
+            const newPage = currentPage + delta;
+            const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
+            
+            if (newPage > 0 && newPage <= totalPages) {
+                currentPage = newPage;
+                displayTasks();
+            }
+        }
+
+        // Применение фильтров
+        function applyFilters() {
+            currentSearchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredTasks = allTasks.filter(task => {
+                const nameMatch = task.name.toLowerCase().includes(currentSearchTerm);
+                const tagsMatch = task.tags.some(tag => tag.toLowerCase().includes(currentSearchTerm));
+                return nameMatch || tagsMatch;
+            });
+            
+            currentPage = 1;
+            displayTasks();
+        }
+
+        // Сброс фильтров
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            currentSearchTerm = '';
+            filteredTasks = [...allTasks];
+            currentPage = 1;
+            displayTasks();
+        }
+
+        // Выход
         function logout() {
             localStorage.removeItem('user');
             window.location.href = '/';
         }
+
+        // Загружаем задачи при открытии страницы
+        loadTasks();
     </script>
 </body>
 </html>
