@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="admin-panel">
+        <h1>Админ-панель</h1>
+        <button onclick="logout()">Выйти</button>
+        
+        <div class="task-form">
+            <h2>Добавить новую задачу</h2>
+            <input type="text" id="taskTitle" placeholder="Название">
+            <textarea id="taskContent" placeholder="Условие задачи"></textarea>
+            <input type="number" id="taskRating" placeholder="Рейтинг">
+            <input type="file" id="taskImage">
+            <button onclick="addTask()">Добавить задачу</button>
+        </div>
+        
+        <div id="tasksContainer"></div>
+    </div>
+    
+    <script src="admin.js"></script>
+</body>
+</html>

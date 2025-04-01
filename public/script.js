@@ -66,14 +66,17 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         console.log('Ответ сервера:', data);
         
         if (data.success) {
-            console.log('Успешный вход, данные пользователя:', data.user);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            
-            // Перенаправление с таймаутом для отладки
-            setTimeout(() => {
-                console.log('Перенаправление на profile.html');
-                window.location.href = 'http://localhost:3000/profile.html';
-            }, 500);
+        console.log('Успешный вход, данные пользователя:', data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('token', data.token || '');
+
+            if (data.user.isAdmin) {
+                window.location.href = '/admin.html';
+            } else {
+                window.location.href = '/profile.html';
+            }
+        } else {
+            alert(data.error || 'Ошибка входа');
         }
     } catch (error) {
         console.error('Ошибка входа:', error);
