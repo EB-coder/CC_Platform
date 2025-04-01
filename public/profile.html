@@ -16,6 +16,19 @@
             align-items: center;
             margin-bottom: 20px;
         }
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 120px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
         .task-container {
             background: white;
             border-radius: 10px;
@@ -92,17 +105,12 @@
             align-items: center;
             padding: 0 15px;
         }
-        .solved-checkbox {
-            position: absolute;
-            right: 20px;
-            top: 20px;
-        }
         .solved {
             background-color: #e6f7e6;
             border-left: 4px solid #4CAF50;
         }
-        .sort-arrow {
-            margin-left: 5px;
+        .recent-activity {
+            margin-top: 30px;
         }
     </style>
 </head>
@@ -110,6 +118,17 @@
     <div class="header">
         <h1>Добро пожаловать, <span id="username"></span>!</h1>
         <button onclick="logout()">Выйти</button>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <h3>Решено</h3>
+            <p id="solvedCount">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Активность</h3>
+            <p id="lastActive">Сегодня</p>
+        </div>
     </div>
 
     <div class="controls-container">
@@ -133,16 +152,11 @@
             <label for="sortBy">Сортировка:</label>
             <select id="sortBy" onchange="applySorting()">
                 <option value="default">По умолчанию</option>
-                <option value="rating-asc">Рейтинг (по возрастанию)</option>
-                <option value="rating-desc">Рейтинг (по убыванию)</option>
-                <option value="solved-asc">Решений (по возрастанию)</option>
-                <option value="solved-desc">Решений (по убыванию)</option>
+                <option value="rating-asc">Рейтинг (↑)</option>
+                <option value="rating-desc">Рейтинг (↓)</option>
+                <option value="solved-asc">Решений (↑)</option>
+                <option value="solved-desc">Решений (↓)</option>
             </select>
-        </div>
-        
-        <div class="control-group">
-            <label for="showSolved">Показать решенные:</label>
-            <input type="checkbox" id="showSolved" checked onchange="applyFilters()">
         </div>
     </div>
 
@@ -156,6 +170,11 @@
         <button id="nextPage" onclick="changePage(1)">Вперед</button>
     </div>
 
+    <div class="recent-activity">
+        <h2>Ваша активность</h2>
+        <div id="activityFeed"></div>
+    </div>
+
     <script>
         // Глобальные переменные
         let allTasks = [];
@@ -164,20 +183,43 @@
         let tasksPerPage = 20;
         let currentSearchTerm = '';
         let currentSort = 'default';
-        let showSolved = true;
-        let solvedTasks = JSON.parse(localStorage.getItem('solvedTasks')) || {};
+        let userStats = {
+            solved: 0,
+            lastActive: new Date()
+        };
 
         // Проверка авторизации
         const userData = JSON.parse(localStorage.getItem('user'));
         if (!userData) window.location.href = '/';
         document.getElementById('username').textContent = userData.username;
 
+        // Загрузка данных пользователя
+        async function loadUserData() {
+            try {
+                const response = await fetch('/api/user-stats', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    userStats = data;
+                    document.getElementById('solvedCount').textContent = userStats.solved;
+                    document.getElementById('lastActive').textContent = 
+                        new Date(userStats.lastActive).toLocaleDateString();
+                }
+            } catch (error) {
+                console.error('Error loading user stats:', error);
+            }
+        }
+
         // Загрузка задач
         async function loadTasks() {
             try {
                 document.getElementById('tasksContainer').innerHTML = '<p>Загрузка задач...</p>';
                 
-                const response = await fetch('/api/cf-problems');
+                const response = await fetch('/api/recent-problems');
                 const data = await response.json();
                 
                 if (data.status === 'OK') {
@@ -185,42 +227,29 @@
                         ...task,
                         id: `${task.contestId}${task.index}`,
                         rating: task.rating || 0,
-                        solvedCount: task.solvedCount || 0
+                        solvedCount: task.solvedCount || 0,
+                        isSolved: data.userProgress[task.id] || false
                     }));
                     applyFilters();
                 } else {
-                    console.error('Ошибка загрузки задач:', data.comment);
-                    // Попробуем напрямую, если прокси не работает
-                    const directResponse = await fetch('https://codeforces.com/api/problemset.problems');
-                    const directData = await directResponse.json();
-                    if (directData.status === 'OK') {
-                        allTasks = directData.result.problems.map(task => ({
-                            ...task,
-                            id: `${task.contestId}${task.index}`,
-                            rating: task.rating || 0,
-                            solvedCount: task.solvedCount || 0
-                        }));
-                        applyFilters();
-                    } else {
-                        document.getElementById('tasksContainer').innerHTML = '<p>Не удалось загрузить задачи. Попробуйте позже.</p>';
-                    }
+                    document.getElementById('tasksContainer').innerHTML = 
+                        '<p>Не удалось загрузить задачи. Попробуйте позже.</p>';
                 }
             } catch (error) {
-                console.error('Ошибка:', error);
-                document.getElementById('tasksContainer').innerHTML = '<p>Ошибка при загрузке задач. Проверьте подключение к интернету.</p>';
+                console.error('Error:', error);
+                document.getElementById('tasksContainer').innerHTML = 
+                    '<p>Ошибка при загрузке задач. Проверьте подключение.</p>';
             }
         }
 
         // Применение фильтров и сортировки
         function applyFilters() {
             currentSearchTerm = document.getElementById('searchInput').value.toLowerCase();
-            showSolved = document.getElementById('showSolved').checked;
             
             filteredTasks = allTasks.filter(task => {
                 const nameMatch = task.name.toLowerCase().includes(currentSearchTerm);
                 const tagsMatch = task.tags.some(tag => tag.toLowerCase().includes(currentSearchTerm));
-                const solvedMatch = showSolved || !solvedTasks[task.id];
-                return (nameMatch || tagsMatch) && solvedMatch;
+                return nameMatch || tagsMatch;
             });
             
             applySorting();
@@ -244,33 +273,14 @@
                     filteredTasks.sort((a, b) => b.solvedCount - a.solvedCount);
                     break;
                 default:
-                    // Оставляем оригинальный порядок
-                    break;
+                    filteredTasks.sort((a, b) => b.isSolved - a.isSolved || a.rating - b.rating);
             }
             
             currentPage = 1;
             displayTasks();
         }
 
-        // Сброс фильтров
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('sortBy').value = 'default';
-            document.getElementById('showSolved').checked = true;
-            currentSearchTerm = '';
-            currentSort = 'default';
-            showSolved = true;
-            applyFilters();
-        }
-
-        // Изменение количества задач на странице
-        function changePerPage() {
-            tasksPerPage = parseInt(document.getElementById('perPage').value);
-            currentPage = 1;
-            displayTasks();
-        }
-
-        // Отображение задач с пагинацией
+        // Отображение задач
         function displayTasks() {
             const container = document.getElementById('tasksContainer');
             container.innerHTML = '';
@@ -280,19 +290,18 @@
             const tasksToShow = filteredTasks.slice(startIndex, endIndex);
             
             if (tasksToShow.length === 0) {
-                container.innerHTML = '<p>Задачи не найдены. Попробуйте изменить параметры поиска.</p>';
+                container.innerHTML = '<p>Задачи не найдены. Измените параметры поиска.</p>';
                 return;
             }
             
             tasksToShow.forEach(task => {
                 const taskElement = document.createElement('div');
-                taskElement.className = `task-container ${solvedTasks[task.id] ? 'solved' : ''}`;
+                taskElement.className = `task-container ${task.isSolved ? 'solved' : ''}`;
                 
                 taskElement.innerHTML = `
-
                     <div class="task-title">
-                        <a href="/task.html?id=${task.id}" style="color: inherit; text-decoration: none;">
-                             ${task.id} - ${task.name}
+                        <a href="/task.html?contestId=${task.contestId}&index=${task.index}">
+                            ${task.contestId}${task.index} - ${task.name}
                         </a>
                     </div>
                     <div class="task-info">
@@ -302,11 +311,6 @@
                     <div class="task-tags">
                         ${task.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                     </div>
-                    <label class="solved-checkbox">
-                        <input type="checkbox" ${solvedTasks[task.id] ? 'checked' : ''} 
-                               onchange="toggleSolved('${task.id}', this.checked)">
-                        Решено
-                    </label>
                 `;
                 
                 container.appendChild(taskElement);
@@ -315,18 +319,7 @@
             updatePaginationControls();
         }
 
-        // Переключение статуса "решено"
-        function toggleSolved(taskId, isSolved) {
-            if (isSolved) {
-                solvedTasks[taskId] = true;
-            } else {
-                delete solvedTasks[taskId];
-            }
-            localStorage.setItem('solvedTasks', JSON.stringify(solvedTasks));
-            applyFilters(); // Переприменяем фильтры (если скрываем решенные)
-        }
-
-        // Обновление элементов пагинации
+        // Обновление пагинации
         function updatePaginationControls() {
             const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
             document.getElementById('pageInfo').textContent = `Страница ${currentPage} из ${totalPages}`;
@@ -335,24 +328,15 @@
             document.getElementById('nextPage').disabled = currentPage >= totalPages;
         }
 
-        // Смена страницы
-        function changePage(delta) {
-            const newPage = currentPage + delta;
-            const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
-            
-            if (newPage > 0 && newPage <= totalPages) {
-                currentPage = newPage;
-                displayTasks();
-            }
-        }
-
         // Выход
         function logout() {
             localStorage.removeItem('user');
+            localStorage.removeItem('token');
             window.location.href = '/';
         }
 
-        // Загружаем задачи при открытии страницы
+        // Инициализация
+        loadUserData();
         loadTasks();
     </script>
 </body>

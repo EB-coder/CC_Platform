@@ -12,7 +12,13 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+    /* background: linear-gradient(90deg, #e2e2e2, #c9d6ff); */
+    background: url('/images/bg-log.jpg') no-repeat center center/cover;
+    transition: background-image 0.8s ease-in-out;
+}
+
+body.register-bg {
+    background-image: url('/images/bg-reg.jpg');
 }
 
 .container {

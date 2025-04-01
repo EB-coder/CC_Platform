@@ -3,13 +3,25 @@ const registerBtn = document.querySelector('.register-btn');
 const loginBtn = document.querySelector('.login-btn');
 
 // Переключение между формами
+// registerBtn.addEventListener('click', () => {
+//     container.classList.add('active');
+// });
+
+// loginBtn.addEventListener('click', () => {
+//     container.classList.remove('active');
+// });
+
+// Переключение форм + смена фона
 registerBtn.addEventListener('click', () => {
     container.classList.add('active');
+    document.body.classList.add('register-bg');
 });
 
 loginBtn.addEventListener('click', () => {
     container.classList.remove('active');
+    document.body.classList.remove('register-bg');
 });
+
 // Функция проверки email
 function isValidEmail(email) {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

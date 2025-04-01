@@ -103,12 +103,33 @@ app.get('/profile.html', (req, res) => {
 
 app.get('/api/cf-problems', async (req, res) => {
     try {
-        const response = await fetch('https://codeforces.com/api/problemset.problems');
-        const data = await response.json();
-        res.json(data);
-    } catch (err) {
-        console.error('Ошибка при запросе к Codeforces:', err);
-        res.status(500).json({ error: 'Не удалось загрузить задачи' });
+        const response = await axios.get(
+            'https://codeforces.com/api/problemset.problems'
+        );
+        
+        if (response.data.status !== "OK") {
+            return res.status(500).json({ error: "Failed to fetch problems" });
+        }
+
+        // Фильтруем только актуальные задачи (по дате или другим критериям)
+        const currentDate = new Date();
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(currentDate.getMonth() - 3);
+
+        const recentProblems = response.data.result.problems.filter(problem => {
+            // Если у задачи есть дата создания
+            if (problem.creationTime) {
+                const problemDate = new Date(problem.creationTime * 1000);
+                return problemDate > threeMonthsAgo;
+            }
+            return true; // Если даты нет, включаем задачу
+        });
+
+        res.json({
+            problems: recentProblems.slice(0, 100) // Первые 100 актуальных задач
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 //-------------------------------------------------------------------------
