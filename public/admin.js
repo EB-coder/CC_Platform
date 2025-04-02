@@ -75,6 +75,8 @@ async function submitTask() {
     const content = document.getElementById('taskContent').value.trim();
     const language = document.getElementById('taskLanguage').value;
 
+    
+
     if (!title || !content) {
         alert('Название и условие задачи обязательны!');
         return;
@@ -105,18 +107,59 @@ async function submitTask() {
     }
 }
 
+// async function editTask(taskId) {
+//     try {
+//         const response = await fetch(`/api/tasks/${taskId}`, {
+//             headers: {
+//                 'Authorization': `Bearer ${localStorage.getItem('token')}`
+//             }
+//         });
+        
+//         if (!response.ok) throw new Error('Ошибка загрузки задачи');
+        
+//         const task = await response.json();
+        
+//         document.getElementById('taskId').value = task.id;
+//         document.getElementById('taskTitle').value = task.title;
+//         document.getElementById('taskContent').value = task.content;
+//         document.getElementById('taskLanguage').value = task.language;
+        
+//         document.getElementById('submitBtn').textContent = 'Обновить задачу';
+//         document.getElementById('cancelBtn').style.display = 'inline-block';
+        
+//     } catch (error) {
+//         console.error('Ошибка:', error);
+//         alert('Не удалось загрузить задачу: ' + error.message);
+//     }
+// }
+
+// Удалить дубликаты и оставить только одну версию каждой функции:
+
+// Редактирование задачи (исправленная версия)
 async function editTask(taskId) {
     try {
-        const response = await fetch(`/api/tasks/${taskId}`, {
+        console.log(`Запрос задачи для редактирования, ID: ${taskId}`);
+        const response = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
-        
-        if (!response.ok) throw new Error('Ошибка загрузки задачи');
-        
+
+        if (!response.ok) {
+            // Попробуем получить JSON с ошибкой
+            try {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Ошибка сервера: ${response.status}`);
+            } catch (e) {
+                // Если не получилось распарсить JSON
+                throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+            }
+        }
+
         const task = await response.json();
+        console.log('Полученные данные задачи:', task);
         
+        // Заполнение формы
         document.getElementById('taskId').value = task.id;
         document.getElementById('taskTitle').value = task.title;
         document.getElementById('taskContent').value = task.content;
@@ -124,13 +167,12 @@ async function editTask(taskId) {
         
         document.getElementById('submitBtn').textContent = 'Обновить задачу';
         document.getElementById('cancelBtn').style.display = 'inline-block';
-        
     } catch (error) {
-        console.error('Ошибка:', error);
-        alert('Не удалось загрузить задачу: ' + error.message);
+        console.error('Ошибка при редактировании:', error);
+        alert(error.message);
     }
 }
-
+// Сброс формы (единственная версия)
 function resetForm() {
     document.getElementById('taskId').value = '';
     document.getElementById('taskTitle').value = '';
@@ -138,42 +180,6 @@ function resetForm() {
     document.getElementById('taskLanguage').value = 'cpp';
     document.getElementById('submitBtn').textContent = 'Создать задачу';
     document.getElementById('cancelBtn').style.display = 'none';
-}
-
-function resetForm() {
-    document.getElementById('taskId').value = '';
-    document.getElementById('taskTitle').value = '';
-    document.getElementById('taskContent').value = '';
-    document.getElementById('taskLanguage').value = 'cpp';
-    document.getElementById('submitBtn').textContent = 'Создать задачу';
-    document.getElementById('cancelBtn').style.display = 'none';
-}
-
-// Редактирование задачи
-async function editTask(taskId) {
-    try {
-        const response = await fetch(`/api/tasks/${taskId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-        
-        if (!response.ok) throw new Error('Ошибка загрузки задачи');
-        
-        const task = await response.json();
-        
-        document.getElementById('taskId').value = task.id;
-        document.getElementById('taskTitle').value = task.title;
-        document.getElementById('taskContent').value = task.content;
-        document.getElementById('taskLanguage').value = task.language;
-        
-        document.getElementById('submitBtn').textContent = 'Обновить задачу';
-        document.getElementById('cancelBtn').style.display = 'inline-block';
-        
-    } catch (error) {
-        console.error('Ошибка:', error);
-        alert('Не удалось загрузить задачу: ' + error.message);
-    }
 }
 
 // Удаление задачи
@@ -196,16 +202,6 @@ async function deleteTask(taskId) {
         console.error('Ошибка:', error);
         alert('Не удалось удалить задачу');
     }
-}
-
-// Сброс формы
-function resetForm() {
-    document.getElementById('taskId').value = '';
-    document.getElementById('taskTitle').value = '';
-    document.getElementById('taskContent').value = '';
-    document.getElementById('taskLanguage').value = 'cpp';
-    document.getElementById('submitBtn').textContent = 'Создать задачу';
-    document.getElementById('cancelBtn').style.display = 'none';
 }
 
 // Отмена редактирования

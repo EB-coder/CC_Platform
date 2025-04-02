@@ -46,24 +46,45 @@ function validateEmail(email) {
 }
 
 // Middleware для проверки админа
+// function checkAdmin(req, res, next) {
+//     const token = req.headers.authorization?.split(' ')[1];
+    
+//     if (!token) {
+//         return res.status(401).json({ error: 'Требуется авторизация' });
+//     }
+    
+//     try {
+//         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key');
+//         if (!decoded.isAdmin) {
+//             return res.status(403).json({ error: 'Недостаточно прав' });
+//         }
+//         req.user = decoded;
+//         next();
+//     } catch (err) {
+//         res.status(401).json({ error: 'Недействительный токен' });
+//     }
+// }
+
 function checkAdmin(req, res, next) {
-    const token = req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-        return res.status(401).json({ error: 'Требуется авторизация' });
-    }
-    
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key');
-        if (!decoded.isAdmin) {
-            return res.status(403).json({ error: 'Недостаточно прав' });
-        }
-        req.user = decoded;
-        next();
-    } catch (err) {
-        res.status(401).json({ error: 'Недействительный токен' });
-    }
+  const token = req.headers.authorization?.split(' ')[1] || 
+                req.query.token || 
+                req.cookies.token;
+  
+  if (!token) {
+    console.log('❌ Токен не предоставлен');
+    return res.status(401).json({ error: 'Требуется авторизация' });
+  }
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key');
+    req.user = decoded;
+    next();
+  } catch (err) {
+    console.log('❌ Ошибка токена:', err.message);
+    res.status(401).json({ error: 'Недействительный токен' });
+  }
 }
+
 
 // Регистрация
 app.post('/register', async (req, res) => {
@@ -133,8 +154,6 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Роуты для задач
-
 // Получение всех задач
 app.get('/api/tasks', checkAdmin, async (req, res) => {
     try {
@@ -172,28 +191,62 @@ app.post('/api/tasks', checkAdmin, async (req, res) => {
   }
 });
 
-// Обновление задачи
-app.put('/api/tasks/:id', checkAdmin, async (req, res) => {
+// Добавьте этот роут в server.js
+app.get('/api/tasks/:id', async (req, res) => {
   try {
-      const { id } = req.params;
-      const { title, content, language } = req.body;
+    const id = parseInt(req.params.id); // Явное преобразование в число
+    console.log('🛠️ Запрос задачи с ID:', id, '(Тип:', typeof id + ')');
 
-      const result = await pool.query(
-          `UPDATE tasks 
-           SET title = $1, content = $2, language = $3
-           WHERE id = $4 RETURNING *`,
-          [title, content, language, id]
-      );
+    const result = await pool.query('SELECT * FROM tasks WHERE id = $1', [id]);
+    
+    if (result.rows.length === 0) {
+      console.log('⚠️ Задача не найдена');
+      return res.status(404).json({ error: 'Задача не найдена' });
+    }
 
-      res.json(result.rows[0]);
+    console.log('✅ Задача найдена:', result.rows[0]);
+    res.json(result.rows[0]);
   } catch (err) {
-      console.error('Error:', err);
-      res.status(500).json({ 
-          error: 'Ошибка обновления задачи',
-          details: err.message 
-      });
+    console.error('❌ Ошибка сервера:', err);
+    res.status(500).json({ error: 'Ошибка базы данных' });
   }
 });
+
+// Обновление задачи
+// app.put('/api/tasks/:id', checkAdmin, async (req, res) => {
+//   try {
+//       const { id } = req.params;
+//       const { title, content, language } = req.body;
+
+//       // 1. Проверяем, существует ли задача
+//       const checkTask = await pool.query(
+//           'SELECT * FROM tasks WHERE id = $1',
+//           [id]
+//       );
+
+//       if (checkTask.rows.length === 0) {
+//           return res.status(404).json({ error: 'Задача не найдена' });
+//       }
+
+//       // 2. Обновляем задачу
+//       const result = await pool.query(
+//           `UPDATE tasks 
+//            SET title = $1, content = $2, language = $3
+//            WHERE id = $4 RETURNING *`,
+//           [title, content, language, id]
+//       );
+
+//       // 3. Возвращаем обновлённую задачу
+//       res.json(result.rows[0]);
+
+//   } catch (err) {
+//       console.error('Ошибка обновления задачи:', err);
+//       res.status(500).json({ 
+//           error: 'Ошибка сервера при обновлении задачи',
+//           details: err.message  // Детали для отладки (не показывать пользователю)
+//       });
+//   }
+// });
 
 // Удаление задачи
 app.delete('/api/tasks/:id', checkAdmin, async (req, res) => {
@@ -228,3 +281,4 @@ app.get('/profile.html', (req, res) => {
 app.listen(port, () => {
     console.log(`Сервер запущен на http://localhost:${port}`);
 });
+
