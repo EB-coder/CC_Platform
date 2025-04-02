@@ -4,8 +4,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
-const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const port = 3000;
@@ -13,22 +13,11 @@ const port = 3000;
 // Настройки
 app.use(cors({
     origin: 'http://localhost:3000',
-    methods: ['GET', 'POST', 'PUT'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
-
-// Настройка загрузки файлов
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/uploads/');
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);
-    }
-});
-const upload = multer({ storage });
 
 // Подключение к PostgreSQL
 const pool = new Pool({
@@ -144,8 +133,10 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Админ-роуты
-app.get('/api/admin/tasks', checkAdmin, async (req, res) => {
+// Роуты для задач
+
+// Получение всех задач
+app.get('/api/tasks', checkAdmin, async (req, res) => {
     try {
         const tasks = await pool.query(`
             SELECT t.*, u.username as admin_name 
@@ -155,96 +146,72 @@ app.get('/api/admin/tasks', checkAdmin, async (req, res) => {
         `);
         res.json(tasks.rows);
     } catch (err) {
+        console.error('Ошибка загрузки задач:', err);
         res.status(500).json({ error: 'Ошибка загрузки задач' });
     }
 });
 
-app.post('/api/admin/tasks', checkAdmin, upload.single('image'), async (req, res) => {
-    try {
-        const { title, content, rating } = req.body;
-        const imageUrl = req.file ? '/uploads/' + req.file.filename : null;
-        
-        const newTask = await pool.query(
-            `INSERT INTO tasks 
-            (title, content, rating, image_url, admin_id) 
-            VALUES ($1, $2, $3, $4, $5) 
-            RETURNING *`,
-            [title, content, rating, imageUrl, req.user.id]
-        );
-        
-        res.json(newTask.rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Ошибка создания задачи' });
-    }
+// Создание задачи
+app.post('/api/tasks', checkAdmin, async (req, res) => {
+  try {
+      const { title, content, language } = req.body;
+      
+      const result = await pool.query(
+          `INSERT INTO tasks (title, content, language, admin_id)
+           VALUES ($1, $2, $3, $4) RETURNING *`,
+          [title, content, language, req.user.id]
+      );
+
+      res.status(201).json(result.rows[0]);
+  } catch (err) {
+      console.error('Error:', err);
+      res.status(500).json({ 
+          error: 'Ошибка создания задачи',
+          details: err.message 
+      });
+  }
 });
 
-app.put('/api/admin/tasks/:id/visibility', checkAdmin, async (req, res) => {
+// Обновление задачи
+app.put('/api/tasks/:id', checkAdmin, async (req, res) => {
+  try {
+      const { id } = req.params;
+      const { title, content, language } = req.body;
+
+      const result = await pool.query(
+          `UPDATE tasks 
+           SET title = $1, content = $2, language = $3
+           WHERE id = $4 RETURNING *`,
+          [title, content, language, id]
+      );
+
+      res.json(result.rows[0]);
+  } catch (err) {
+      console.error('Error:', err);
+      res.status(500).json({ 
+          error: 'Ошибка обновления задачи',
+          details: err.message 
+      });
+  }
+});
+
+// Удаление задачи
+app.delete('/api/tasks/:id', checkAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        const { isActive } = req.body;
-        
-        const updatedTask = await pool.query(
-            'UPDATE tasks SET is_active = $1 WHERE id = $2 RETURNING *',
-            [isActive, id]
+        const result = await pool.query(
+            'DELETE FROM tasks WHERE id = $1 RETURNING *',
+            [id]
         );
         
-        res.json(updatedTask.rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: 'Ошибка обновления задачи' });
-    }
-});
-
-// Публичные роуты
-app.get('/api/tasks/active', async (req, res) => {
-    try {
-        const tasks = await pool.query(`
-            SELECT * FROM tasks 
-            WHERE is_active = TRUE
-            ORDER BY created_at DESC
-        `);
-        res.json(tasks.rows);
-    } catch (err) {
-        res.status(500).json({ error: 'Ошибка загрузки задач' });
-    }
-});
-
-app.get('/api/task', async (req, res) => {
-    try {
-        const taskId = req.query.id;
-        const task = await pool.query(
-            'SELECT * FROM tasks WHERE id = $1',
-            [taskId]
-        );
-        
-        if (task.rows.length === 0) {
+        if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Задача не найдена' });
         }
         
-        res.json({
-            success: true,
-            task: task.rows[0]
-        });
+        res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: 'Ошибка загрузки задачи' });
-    }
-});
-
-app.post('/api/submit', async (req, res) => {
-    try {
-        const { taskId, userId, answer } = req.body;
-        
-        const newAnswer = await pool.query(
-            `INSERT INTO task_answers 
-            (task_id, user_id, answer) 
-            VALUES ($1, $2, $3) 
-            RETURNING *`,
-            [taskId, userId, answer]
-        );
-        
-        res.json({ success: true, answer: newAnswer.rows[0] });
-    } catch (err) {
-        res.status(500).json({ error: 'Ошибка отправки решения' });
+        console.error('Ошибка удаления задачи:', err);
+        res.status(500).json({ error: 'Ошибка удаления задачи' });
     }
 });
 
