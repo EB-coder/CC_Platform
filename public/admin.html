@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ-панель</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+    <link rel="manifest" href="images/site.webmanifest">
+    <meta name="theme-color" content="#7494ec">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body {
@@ -45,6 +50,7 @@
         }
         .form-group {
             margin-bottom: 15px;
+            padding: 20px;
         }
         label {
             display: block;
@@ -93,6 +99,31 @@
         }
         .delete-btn {
             background: #e74c3c;
+        }
+        .visibility-btn {
+            margin-right: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .visibility-btn.active {
+            background-color: #2ecc71;
+        }
+
+        .visibility-btn.inactive {
+            background-color: #e74c3c;
+        }
+
+        .task-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .task-item.hidden {
+            border-left-color: #e74c3c;
+            opacity: 0.8;
+            
         }
     </style>
 </head>

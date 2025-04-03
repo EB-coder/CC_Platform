@@ -30,31 +30,85 @@ async function loadTasks() {
 }
 
 // Отображение задач
+// function renderTasks(tasks) {
+//     const container = document.getElementById('tasksContainer');
+//     container.innerHTML = '';
+    
+//     if (tasks.length === 0) {
+//         container.innerHTML = '<p>Нет созданных задач</p>';
+//         return;
+//     }
+    
+//     tasks.forEach(task => {
+//         const taskElement = document.createElement('div');
+//         taskElement.className = 'task-item';
+//         taskElement.innerHTML = `
+//             <div>
+//                 <h3>${task.title}</h3>
+//                 <p>Язык: ${getLanguageName(task.language)}</p>
+//                 <p>${task.content}</p>
+//             </div>
+//             <div class="task-actions">
+//                 <button class="btn edit-btn" onclick="editTask('${task.id}')">Редактировать</button>
+//                 <button class="btn delete-btn" onclick="deleteTask('${task.id}')">Удалить</button>
+//             </div>
+//         `;
+//         container.appendChild(taskElement);
+//     });
+// }
+
 function renderTasks(tasks) {
     const container = document.getElementById('tasksContainer');
     container.innerHTML = '';
-    
-    if (tasks.length === 0) {
-        container.innerHTML = '<p>Нет созданных задач</p>';
-        return;
-    }
     
     tasks.forEach(task => {
         const taskElement = document.createElement('div');
         taskElement.className = 'task-item';
         taskElement.innerHTML = `
             <div>
-                <h3>${task.title}</h3>
+                <h3>${task.title} ${task.is_active ? '' : '(скрыта)'}</h3>
                 <p>Язык: ${getLanguageName(task.language)}</p>
                 <p>${task.content}</p>
             </div>
             <div class="task-actions">
+                <button class="btn visibility-btn" 
+                    onclick="toggleTaskVisibility('${task.id}', ${!task.is_active})"
+                    style="background: ${task.is_active ? '#2ecc71' : '#e74c3c'}">
+                    ${task.is_active ? 'Скрыть' : 'Показать'}
+                </button>
                 <button class="btn edit-btn" onclick="editTask('${task.id}')">Редактировать</button>
                 <button class="btn delete-btn" onclick="deleteTask('${task.id}')">Удалить</button>
             </div>
         `;
         container.appendChild(taskElement);
     });
+}
+
+async function toggleTaskVisibility(taskId, isVisible) {
+    if (!confirm(`Вы уверены, что хотите ${isVisible ? 'показать' : 'скрыть'} эту задачу?`)) return;
+    
+    try {
+        const response = await fetch(`/api/tasks/${taskId}/visibility`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ is_active: isVisible })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Ошибка обновления');
+        }
+        
+        const data = await response.json();
+        alert(`Задача успешно ${isVisible ? 'показана' : 'скрыта'}`);
+        loadTasks(); // Перезагружаем список задач
+    } catch (error) {
+        console.error('Ошибка:', error);
+        alert(`Ошибка: ${error.message}`);
+    }
 }
 
 // Получение названия языка по коду

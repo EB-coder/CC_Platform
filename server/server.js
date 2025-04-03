@@ -271,6 +271,28 @@ app.post('/api/submissions', async (req, res) => {
       console.error('Ошибка при сохранении решения:', err);
       res.status(500).json({ error: 'Ошибка сервера' });
   }
+})
+
+// Обновление видимости задачи
+app.patch('/api/tasks/:id/visibility', checkAdmin, async (req, res) => {
+  try {
+      const { id } = req.params;
+      const { is_active } = req.body;
+      
+      const result = await pool.query(
+          'UPDATE tasks SET is_active = $1 WHERE id = $2 RETURNING *',
+          [is_active, id]
+      );
+      
+      if (result.rows.length === 0) {
+          return res.status(404).json({ error: 'Задача не найдена' });
+      }
+      
+      res.json({ success: true, task: result.rows[0] });
+  } catch (err) {
+      console.error('Ошибка обновления видимости:', err);
+      res.status(500).json({ error: 'Ошибка сервера' });
+  }
 });
 
 // Статические файлы
