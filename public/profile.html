@@ -34,52 +34,29 @@
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .task-container {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        .task-title {
-            color: #3a86ff;
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
-        .task-info {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 10px;
-            font-size: 0.9em;
-        }
-        .task-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        .tag {
-            background: #f0f0f0;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.8em;
-        }
         .controls-container {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
             margin-bottom: 20px;
+            align-items: center;
         }
         .control-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        input[type="text"], select {
-            padding: 8px;
-            border-radius: 5px;
+        #searchInput {
+            padding: 8px 12px;
             border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 200px;
+        }
+        #languageFilter {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         button {
             padding: 8px 15px;
@@ -90,6 +67,40 @@
             cursor: pointer;
         }
         button:hover {
+            background: #5a7bd6;
+        }
+        .task-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .task-card h3 {
+            color: #3a86ff;
+            margin-bottom: 10px;
+        }
+        .task-meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 15px;
+        }
+        .task-content {
+            color: #555;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        .solve-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            background: #7494ec;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .solve-btn:hover {
             background: #5a7bd6;
         }
         .pagination {
@@ -110,49 +121,16 @@
             align-items: center;
             padding: 0 15px;
         }
+        .error {
+            color: #e74c3c;
+            padding: 10px;
+            background: #fdecea;
+            border-radius: 4px;
+        }
         .solved {
             background-color: #e6f7e6;
             border-left: 4px solid #4CAF50;
         }
-        .recent-activity {
-            margin-top: 30px;
-        }
-        .task-card {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .task-card h3 {
-        color: #3a86ff;
-        margin-bottom: 10px;
-        }
-
-        .task-meta {
-        color: #666;
-        font-size: 0.9em;
-        margin-bottom: 10px;
-        }
-
-        .task-content {
-        margin-bottom: 15px;
-        line-height: 1.5;
-        }
-
-        .solve-btn {
-        display: inline-block;
-        padding: 8px 15px;
-        background: #7494ec;
-        color: white;
-        border-radius: 4px;
-        text-decoration: none;
-        }
-
-        .solve-btn:hover {
-        background: #5a7bd6;
-        }                
     </style>
 </head>
 <body>
@@ -174,8 +152,15 @@
 
     <div class="controls-container">
         <div class="control-group">
-            <input type="text" id="searchInput" placeholder="Поиск по названию или тегам...">
-            <button onclick="applyFilters()">Поиск</button>
+            <input type="text" id="searchInput" placeholder="Поиск по названию...">
+            <select id="languageFilter">
+                <option value="">Все языки</option>
+                <option value="cpp">C++</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="javascript">JavaScript</option>
+            </select>
+            <button onclick="applyFilters()">Применить</button>
             <button onclick="resetFilters()">Сбросить</button>
         </div>
         
@@ -186,17 +171,6 @@
                 <option value="20" selected>20</option>
                 <option value="50">50</option>
                 <option value="100">100</option>
-            </select>
-        </div>
-        
-        <div class="control-group">
-            <label for="sortBy">Сортировка:</label>
-            <select id="sortBy" onchange="applySorting()">
-                <option value="default">По умолчанию</option>
-                <option value="rating-asc">Рейтинг (↑)</option>
-                <option value="rating-desc">Рейтинг (↓)</option>
-                <option value="solved-asc">Решений (↑)</option>
-                <option value="solved-desc">Решений (↓)</option>
             </select>
         </div>
     </div>
@@ -211,28 +185,21 @@
         <button id="nextPage" onclick="changePage(1)">Вперед</button>
     </div>
 
-    <div class="recent-activity">
-        <h2>Ваша активность</h2>
-        <div id="activityFeed"></div>
-    </div>
-
     <script>
         // Глобальные переменные
         let allTasks = [];
         let filteredTasks = [];
         let currentPage = 1;
         let tasksPerPage = 20;
-        let currentSearchTerm = '';
-        let currentSort = 'default';
-        let userStats = {
-            solved: 0,
-            lastActive: new Date()
+        let currentFilters = {
+            search: '',
+            language: ''
         };
 
         // Проверка авторизации
-        const userData = JSON.parse(localStorage.getItem('user'));
-        if (!userData) window.location.href = '/';
-        document.getElementById('username').textContent = userData.username;
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) window.location.href = '/';
+        document.getElementById('username').textContent = user.username;
 
         // Загрузка данных пользователя
         async function loadUserData() {
@@ -245,10 +212,9 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    userStats = data;
-                    document.getElementById('solvedCount').textContent = userStats.solved;
+                    document.getElementById('solvedCount').textContent = data.solved || 0;
                     document.getElementById('lastActive').textContent = 
-                        new Date(userStats.lastActive).toLocaleDateString();
+                        new Date(data.lastActive).toLocaleDateString();
                 }
             } catch (error) {
                 console.error('Error loading user stats:', error);
@@ -260,165 +226,76 @@
             try {
                 document.getElementById('tasksContainer').innerHTML = '<p>Загрузка задач...</p>';
                 
-                const response = await fetch('/api/recent-problems');
-                const data = await response.json();
+                const response = await fetch('/api/active-tasks', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
                 
-                if (data.status === 'OK') {
-                    allTasks = data.result.problems.map(task => ({
-                        ...task,
-                        id: `${task.contestId}${task.index}`,
-                        rating: task.rating || 0,
-                        solvedCount: task.solvedCount || 0,
-                        isSolved: data.userProgress[task.id] || false
-                    }));
-                    applyFilters();
-                } else {
-                    document.getElementById('tasksContainer').innerHTML = 
-                        '<p>Не удалось загрузить задачи. Попробуйте позже.</p>';
-                }
+                if (!response.ok) throw new Error('Ошибка загрузки задач');
+                
+                allTasks = await response.json();
+                applyFilters();
             } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('tasksContainer').innerHTML = 
-                    '<p>Ошибка при загрузке задач. Проверьте подключение.</p>';
+                console.error('Ошибка:', error);
+                document.getElementById('tasksContainer').innerHTML = `
+                    <div class="error">Не удалось загрузить задачи: ${error.message}</div>
+                `;
             }
         }
 
-        // Применение фильтров и сортировки
+        // Применение фильтров
         function applyFilters() {
-            currentSearchTerm = document.getElementById('searchInput').value.toLowerCase();
+            currentFilters = {
+                search: document.getElementById('searchInput').value.toLowerCase(),
+                language: document.getElementById('languageFilter').value
+            };
             
             filteredTasks = allTasks.filter(task => {
-                const nameMatch = task.name.toLowerCase().includes(currentSearchTerm);
-                const tagsMatch = task.tags.some(tag => tag.toLowerCase().includes(currentSearchTerm));
-                return nameMatch || tagsMatch;
+                const matchesSearch = task.title.toLowerCase().includes(currentFilters.search) || 
+                                    task.content.toLowerCase().includes(currentFilters.search);
+                const matchesLanguage = !currentFilters.language || 
+                                      task.language === currentFilters.language;
+                
+                return matchesSearch && matchesLanguage;
             });
             
-            applySorting();
+            currentPage = 1;
+            renderTasks();
         }
 
-        // Применение сортировки
-        function applySorting() {
-            currentSort = document.getElementById('sortBy').value;
-            
-            switch(currentSort) {
-                case 'rating-asc':
-                    filteredTasks.sort((a, b) => a.rating - b.rating);
-                    break;
-                case 'rating-desc':
-                    filteredTasks.sort((a, b) => b.rating - a.rating);
-                    break;
-                case 'solved-asc':
-                    filteredTasks.sort((a, b) => a.solvedCount - b.solvedCount);
-                    break;
-                case 'solved-desc':
-                    filteredTasks.sort((a, b) => b.solvedCount - a.solvedCount);
-                    break;
-                default:
-                    filteredTasks.sort((a, b) => b.isSolved - a.isSolved || a.rating - b.rating);
-            }
-            
-            currentPage = 1;
-            displayTasks();
+        // Сброс фильтров
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('languageFilter').value = '';
+            applyFilters();
         }
 
         // Отображение задач
-        function displayTasks() {
+        function renderTasks() {
             const container = document.getElementById('tasksContainer');
-            container.innerHTML = '';
-            
             const startIndex = (currentPage - 1) * tasksPerPage;
-            const endIndex = startIndex + tasksPerPage;
-            const tasksToShow = filteredTasks.slice(startIndex, endIndex);
+            const paginatedTasks = filteredTasks.slice(startIndex, startIndex + tasksPerPage);
             
-            if (tasksToShow.length === 0) {
+            if (paginatedTasks.length === 0) {
                 container.innerHTML = '<p>Задачи не найдены. Измените параметры поиска.</p>';
                 return;
             }
-            
-            tasksToShow.forEach(task => {
-                const taskElement = document.createElement('div');
-                taskElement.className = `task-container ${task.isSolved ? 'solved' : ''}`;
-                
-                taskElement.innerHTML = `
-                    <div class="task-title">
-                        <a href="/task.html?contestId=${task.contestId}&index=${task.index}">
-                            ${task.contestId}${task.index} - ${task.name}
-                        </a>
+
+            container.innerHTML = paginatedTasks.map(task => `
+                <div class="task-card">
+                    <h3>${task.title}</h3>
+                    <div class="task-meta">
+                        <span>Язык: ${getLanguageName(task.language)}</span>
+                        ${task.rating ? `<span>Рейтинг: ${task.rating}</span>` : ''}
                     </div>
-                    <div class="task-info">
-                        <span>Рейтинг: ${task.rating || 'Не указан'}</span>
-                        <span>Решений: ${task.solvedCount || 'Неизвестно'}</span>
-                    </div>
-                    <div class="task-tags">
-                        ${task.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                    </div>
-                `;
-                
-                container.appendChild(taskElement);
-            });
+                    <div class="task-content">${task.content.substring(0, 150)}...</div>
+                    <a href="/task.html?id=${task.id}" class="solve-btn">Решить задачу</a>
+                </div>
+            `).join('');
             
             updatePaginationControls();
         }
-
-        // После проверки авторизации
-const user = JSON.parse(localStorage.getItem('user'));
-if (!user) window.location.href = '/';
-
-// Загрузка задач
-async function loadTasks() {
-  try {
-    const response = await fetch('/api/active-tasks', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    
-    if (!response.ok) throw new Error('Ошибка загрузки задач');
-    
-    const tasks = await response.json();
-    renderTasks(tasks);
-  } catch (error) {
-    console.error('Ошибка:', error);
-    document.getElementById('tasksContainer').innerHTML = `
-      <div class="error">Не удалось загрузить задачи: ${error.message}</div>
-    `;
-  }
-}
-
-// Отображение задач
-function renderTasks(tasks) {
-  const container = document.getElementById('tasksContainer');
-  
-  if (tasks.length === 0) {
-    container.innerHTML = '<p>Нет доступных задач</p>';
-    return;
-  }
-
-  container.innerHTML = tasks.map(task => `
-    <div class="task-card">
-      <h3>${task.title}</h3>
-      <div class="task-meta">
-        <span>Язык: ${getLanguageName(task.language)}</span>
-      </div>
-      <div class="task-content">${task.content}</div>
-      <a href="/task.html?id=${task.id}" class="solve-btn">Решить задачу</a>
-    </div>
-  `).join('');
-}
-
-// Вспомогательная функция
-function getLanguageName(code) {
-  const languages = {
-    'cpp': 'C++',
-    'python': 'Python',
-    'java': 'Java',
-    'javascript': 'JavaScript'
-  };
-  return languages[code] || code;
-}
-
-// Загружаем задачи при открытии страницы
-loadTasks();
 
         // Обновление пагинации
         function updatePaginationControls() {
@@ -429,6 +306,30 @@ loadTasks();
             document.getElementById('nextPage').disabled = currentPage >= totalPages;
         }
 
+        // Смена страницы
+        function changePage(offset) {
+            currentPage += offset;
+            renderTasks();
+        }
+
+        // Изменение количества задач на странице
+        function changePerPage() {
+            tasksPerPage = parseInt(document.getElementById('perPage').value);
+            currentPage = 1;
+            renderTasks();
+        }
+
+        // Вспомогательная функция для получения названия языка
+        function getLanguageName(code) {
+            const languages = {
+                'cpp': 'C++',
+                'python': 'Python',
+                'java': 'Java',
+                'javascript': 'JavaScript'
+            };
+            return languages[code] || code;
+        }
+
         // Выход
         function logout() {
             localStorage.removeItem('user');
@@ -437,8 +338,14 @@ loadTasks();
         }
 
         // Инициализация
-        loadUserData();
-        loadTasks();
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserData();
+            loadTasks();
+            
+            // Добавляем обработчики для мгновенного поиска
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('languageFilter').addEventListener('change', applyFilters);
+        });
     </script>
 </body>
 </html>

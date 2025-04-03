@@ -211,21 +211,47 @@ app.delete('/api/tasks/:id', checkAdmin, async (req, res) => {
 });
 
 // Получение всех активных задач (для пользователей)
+// app.get('/api/active-tasks', async (req, res) => {
+//   try {
+//     const result = await pool.query(
+//       `SELECT id, title, content, language 
+//        FROM tasks 
+//        WHERE is_active = true
+//        ORDER BY created_at DESC`
+//     );
+//     res.json(result.rows);
+//   } catch (err) {
+//     console.error('Ошибка при получении задач:', err);
+//     res.status(500).json({ error: 'Ошибка сервера' });
+//   }
+// });
 app.get('/api/active-tasks', async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT id, title, content, language 
-       FROM tasks 
-       WHERE is_active = true
-       ORDER BY created_at DESC`
-    );
-    res.json(result.rows);
+      const { search, language } = req.query;
+      let query = `SELECT id, title, content, language, rating 
+                   FROM tasks WHERE is_active = true`;
+      
+      const params = [];
+      
+      if (search) {
+          query += ` AND (title ILIKE $${params.length + 1} OR content ILIKE $${params.length + 1})`;
+          params.push(`%${search}%`);
+      }
+      
+      if (language) {
+          query += ` AND language = $${params.length + 1}`;
+          params.push(language);
+      }
+      
+      query += ' ORDER BY created_at DESC';
+      
+      const result = await pool.query(query, params);
+      res.json(result.rows);
   } catch (err) {
-    console.error('Ошибка при получении задач:', err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+      console.error('Ошибка при получении задач:', err);
+      res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
-
 // Отправка решения
 app.post('/api/submissions', async (req, res) => {
   try {
