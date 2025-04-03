@@ -101,6 +101,17 @@
             color: #3a86ff;
             text-decoration: none;
         }
+        .error {
+            color: #e74c3c;
+            padding: 10px;
+            background: #fdecea;
+            border-radius: 4px;
+        }
+
+        .solved {
+            border-left: 4px solid #2ecc71;
+            background-color: #f0fdf4;
+        }
     </style>
 </head>
 <body>
@@ -150,127 +161,147 @@
 
     <script>
         // Получаем параметры из URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const taskId = urlParams.get('id');
-        
-        // Проверка авторизации
-        const userData = JSON.parse(localStorage.getItem('user'));
-        if (!userData) window.location.href = '/';
-        
-        // Загрузка данных задачи
-        async function loadTask() {
-            try {
-                const response = await fetch(`/api/task?id=${taskId}`);
-                const data = await response.json();
-        
-                if (data.success) {
-                    const task = data.task;
-                    document.getElementById('taskTitle').textContent = `${task.id} - ${task.title}`;
-                    document.getElementById('taskRating').textContent = `Рейтинг: ${task.rating || 'Не указан'}`;
-                    document.getElementById('taskSolved').textContent = `Решений: ${task.solvedCount || 'Неизвестно'}`;
-                    document.getElementById('taskContent').innerHTML = task.content;
-                } else {
-                    throw new Error(data.error || 'Не удалось загрузить задачу');
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки задачи:', error);
-                document.getElementById('taskContent').innerHTML = 
-                     `<p>Ошибка загрузки задачи: ${error.message}</p>`;
+const urlParams = new URLSearchParams(window.location.search);
+const taskId = urlParams.get('id');
+
+// Проверка авторизации
+const user = JSON.parse(localStorage.getItem('user'));
+if (!user) window.location.href = '/';
+
+// Загрузка данных задачи
+async function loadTask() {
+    try {
+        const response = await fetch(`/api/tasks/${taskId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
+        });
+
+        if (!response.ok) {
+            throw new Error('Не удалось загрузить задачу');
         }
+
+        const task = await response.json();
         
-        // Обработка загрузки файла
-        document.getElementById('fileUpload').addEventListener('click', () => {
-            document.getElementById('codeFile').click();
+        // Заполняем данные задачи
+        document.getElementById('taskTitle').textContent = task.title;
+        document.getElementById('taskContent').innerHTML = task.content;
+        document.getElementById('language').value = task.language;
+        
+        // Дополнительные метаданные (если есть)
+        if (task.rating) {
+            document.getElementById('taskRating').textContent = `Рейтинг: ${task.rating}`;
+        }
+        if (task.solved_count) {
+            document.getElementById('taskSolved').textContent = `Решений: ${task.solved_count}`;
+        }
+
+    } catch (error) {
+        console.error('Ошибка загрузки задачи:', error);
+        document.getElementById('taskContent').innerHTML = 
+            `<p class="error">Ошибка загрузки задачи: ${error.message}</p>`;
+    }
+}
+
+// Отправка решения
+async function submitSolution() {
+    const language = document.getElementById('language').value;
+    const code = document.getElementById('codeInput').value;
+
+    if (!code.trim()) {
+        alert('Пожалуйста, введите код или загрузите файл');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/submissions', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ 
+                task_id: taskId, 
+                language, 
+                code,
+                user_id: user.id 
+            })
         });
+
+        const data = await response.json();
         
-        document.getElementById('codeFile').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    document.getElementById('codeInput').value = event.target.result;
-                };
-                reader.readAsText(file);
-            }
-        });
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка отправки решения');
+        }
+
+        alert('Решение отправлено на проверку!');
         
-        // Отправка решения
-        async function submitSolution() {
-            const language = document.getElementById('language').value;
-            const code = document.getElementById('codeInput').value;
+        // Помечаем задачу как решенную локально
+        const solvedTasks = JSON.parse(localStorage.getItem('solvedTasks')) || {};
+        solvedTasks[taskId] = true;
+        localStorage.setItem('solvedTasks', JSON.stringify(solvedTasks));
+        
+        // Обновляем UI
+        document.querySelector('.task-container').classList.add('solved');
+
+    } catch (error) {
+        console.error('Ошибка отправки решения:', error);
+        alert(`Ошибка: ${error.message}`);
+    }
+}
+
+// Обработчики для загрузки файла
+document.getElementById('fileUpload').addEventListener('click', () => {
+    document.getElementById('codeFile').click();
+});
+
+document.getElementById('codeFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            document.getElementById('codeInput').value = event.target.result;
+        };
+        reader.readAsText(file);
+    }
+});
+
+// Drag and drop
+const fileUpload = document.getElementById('fileUpload');
+fileUpload.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    fileUpload.style.borderColor = '#7494ec';
+});
+
+fileUpload.addEventListener('dragleave', () => {
+    fileUpload.style.borderColor = '#ccc';
+});
+
+fileUpload.addEventListener('drop', (e) => {
+    e.preventDefault();
+    fileUpload.style.borderColor = '#ccc';
     
-            if (!code.trim()) {
-                alert('Пожалуйста, введите код или загрузите файл');
-                return;
-            }
-    
-            try {
-                const response = await fetch('/api/submit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ taskId, language, code })
-                });
-            
-                const data = await response.json();
-            
-                if (data.success) {
-                    alert('Решение отправлено на проверку!');
-                
-                // Помечаем задачу как решенную
-                    const solvedTasks = JSON.parse(localStorage.getItem('solvedTasks')) || {};
-                    solvedTasks[taskId] = true;
-                    localStorage.setItem('solvedTasks', JSON.stringify(solvedTasks));
-                
-                // Обновляем статус на странице
-                    document.querySelector('.task-container').classList.add('solved');
-                } else {
-                    throw new Error(data.error || 'Ошибка отправки решения');
-                }
-            } catch (error) {
-                console.error('Ошибка отправки решения:', error);
-                alert(`Ошибка: ${error.message}`);
-            }
-        }
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.match(/\.(cpp|java|py|js)$/i)) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            document.getElementById('codeInput').value = event.target.result;
+        };
+        reader.readAsText(file);
+    } else {
+        alert('Пожалуйста, загрузите файл с кодом (.cpp, .java, .py, .js)');
+    }
+});
 
-        // Добавляем в script:
-        const fileUpload = document.getElementById('fileUpload');
-        const codeInput = document.getElementById('codeInput');
+// Выход
+function logout() {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    window.location.href = '/';
+}
 
-        // Обработчики для drag-and-drop
-        fileUpload.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileUpload.style.borderColor = '#7494ec';
-        });
-
-        fileUpload.addEventListener('dragleave', () => {
-            fileUpload.style.borderColor = '#ccc';
-        });
-
-        fileUpload.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileUpload.style.borderColor = '#ccc';
-            
-            const file = e.dataTransfer.files[0];
-            if (file && file.name.match(/\.(cpp|java|py|js)$/i)) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    codeInput.value = event.target.result;
-                };
-                reader.readAsText(file);
-            } else {
-                alert('Пожалуйста, загрузите файл с кодом (.cpp, .java, .py, .js)');
-            }
-        });        
-        
-        // Выход
-        function logout() {
-            localStorage.removeItem('user');
-            window.location.href = '/';
-        }
-        
-        // Загружаем задачу при открытии страницы
-        loadTask();
+// Загружаем задачу при открытии страницы
+loadTask();
     </script>
 </body>
 </html>

@@ -117,6 +117,42 @@
         .recent-activity {
             margin-top: 30px;
         }
+        .task-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .task-card h3 {
+        color: #3a86ff;
+        margin-bottom: 10px;
+        }
+
+        .task-meta {
+        color: #666;
+        font-size: 0.9em;
+        margin-bottom: 10px;
+        }
+
+        .task-content {
+        margin-bottom: 15px;
+        line-height: 1.5;
+        }
+
+        .solve-btn {
+        display: inline-block;
+        padding: 8px 15px;
+        background: #7494ec;
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        }
+
+        .solve-btn:hover {
+        background: #5a7bd6;
+        }                
     </style>
 </head>
 <body>
@@ -323,6 +359,66 @@
             
             updatePaginationControls();
         }
+
+        // После проверки авторизации
+const user = JSON.parse(localStorage.getItem('user'));
+if (!user) window.location.href = '/';
+
+// Загрузка задач
+async function loadTasks() {
+  try {
+    const response = await fetch('/api/active-tasks', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    
+    if (!response.ok) throw new Error('Ошибка загрузки задач');
+    
+    const tasks = await response.json();
+    renderTasks(tasks);
+  } catch (error) {
+    console.error('Ошибка:', error);
+    document.getElementById('tasksContainer').innerHTML = `
+      <div class="error">Не удалось загрузить задачи: ${error.message}</div>
+    `;
+  }
+}
+
+// Отображение задач
+function renderTasks(tasks) {
+  const container = document.getElementById('tasksContainer');
+  
+  if (tasks.length === 0) {
+    container.innerHTML = '<p>Нет доступных задач</p>';
+    return;
+  }
+
+  container.innerHTML = tasks.map(task => `
+    <div class="task-card">
+      <h3>${task.title}</h3>
+      <div class="task-meta">
+        <span>Язык: ${getLanguageName(task.language)}</span>
+      </div>
+      <div class="task-content">${task.content}</div>
+      <a href="/task.html?id=${task.id}" class="solve-btn">Решить задачу</a>
+    </div>
+  `).join('');
+}
+
+// Вспомогательная функция
+function getLanguageName(code) {
+  const languages = {
+    'cpp': 'C++',
+    'python': 'Python',
+    'java': 'Java',
+    'javascript': 'JavaScript'
+  };
+  return languages[code] || code;
+}
+
+// Загружаем задачи при открытии страницы
+loadTasks();
 
         // Обновление пагинации
         function updatePaginationControls() {

@@ -45,26 +45,6 @@ function validateEmail(email) {
     }
 }
 
-// Middleware для проверки админа
-// function checkAdmin(req, res, next) {
-//     const token = req.headers.authorization?.split(' ')[1];
-    
-//     if (!token) {
-//         return res.status(401).json({ error: 'Требуется авторизация' });
-//     }
-    
-//     try {
-//         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key');
-//         if (!decoded.isAdmin) {
-//             return res.status(403).json({ error: 'Недостаточно прав' });
-//         }
-//         req.user = decoded;
-//         next();
-//     } catch (err) {
-//         res.status(401).json({ error: 'Недействительный токен' });
-//     }
-// }
-
 function checkAdmin(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1] || 
                 req.query.token || 
@@ -191,7 +171,6 @@ app.post('/api/tasks', checkAdmin, async (req, res) => {
   }
 });
 
-// Добавьте этот роут в server.js
 app.get('/api/tasks/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id); // Явное преобразование в число
@@ -211,43 +190,6 @@ app.get('/api/tasks/:id', async (req, res) => {
     res.status(500).json({ error: 'Ошибка базы данных' });
   }
 });
-
-// Обновление задачи
-// app.put('/api/tasks/:id', checkAdmin, async (req, res) => {
-//   try {
-//       const { id } = req.params;
-//       const { title, content, language } = req.body;
-
-//       // 1. Проверяем, существует ли задача
-//       const checkTask = await pool.query(
-//           'SELECT * FROM tasks WHERE id = $1',
-//           [id]
-//       );
-
-//       if (checkTask.rows.length === 0) {
-//           return res.status(404).json({ error: 'Задача не найдена' });
-//       }
-
-//       // 2. Обновляем задачу
-//       const result = await pool.query(
-//           `UPDATE tasks 
-//            SET title = $1, content = $2, language = $3
-//            WHERE id = $4 RETURNING *`,
-//           [title, content, language, id]
-//       );
-
-//       // 3. Возвращаем обновлённую задачу
-//       res.json(result.rows[0]);
-
-//   } catch (err) {
-//       console.error('Ошибка обновления задачи:', err);
-//       res.status(500).json({ 
-//           error: 'Ошибка сервера при обновлении задачи',
-//           details: err.message  // Детали для отладки (не показывать пользователю)
-//       });
-//   }
-// });
-
 // Удаление задачи
 app.delete('/api/tasks/:id', checkAdmin, async (req, res) => {
     try {
@@ -266,6 +208,57 @@ app.delete('/api/tasks/:id', checkAdmin, async (req, res) => {
         console.error('Ошибка удаления задачи:', err);
         res.status(500).json({ error: 'Ошибка удаления задачи' });
     }
+});
+
+// Получение всех активных задач (для пользователей)
+app.get('/api/active-tasks', async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, title, content, language 
+       FROM tasks 
+       WHERE is_active = true
+       ORDER BY created_at DESC`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Ошибка при получении задач:', err);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Отправка решения
+app.post('/api/submissions', async (req, res) => {
+  try {
+      const { task_id, language, code, user_id } = req.body;
+      
+      // Проверяем существование задачи
+      const taskCheck = await pool.query(
+          'SELECT id FROM tasks WHERE id = $1 AND is_active = true',
+          [task_id]
+      );
+      
+      if (taskCheck.rows.length === 0) {
+          return res.status(404).json({ error: 'Задача не найдена или неактивна' });
+      }
+
+      // Сохраняем решение
+      const result = await pool.query(
+          `INSERT INTO submissions 
+           (task_id, user_id, language, code, status) 
+           VALUES ($1, $2, $3, $4, 'pending') 
+           RETURNING *`,
+          [task_id, user_id, language, code]
+      );
+
+      res.json({ 
+          success: true,
+          submission: result.rows[0]
+      });
+
+  } catch (err) {
+      console.error('Ошибка при сохранении решения:', err);
+      res.status(500).json({ error: 'Ошибка сервера' });
+  }
 });
 
 // Статические файлы
