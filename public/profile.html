@@ -14,17 +14,22 @@
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
             padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         .stats-container {
             display: flex;
             gap: 20px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         .stat-card {
             background: white;
@@ -33,6 +38,7 @@
             min-width: 120px;
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex: 1;
         }
         .controls-container {
             display: flex;
@@ -40,6 +46,7 @@
             gap: 15px;
             margin-bottom: 20px;
             align-items: center;
+            justify-content: space-between;
         }
         .control-group {
             display: flex;
@@ -52,8 +59,9 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             min-width: 200px;
+            flex: 1;
         }
-        #languageFilter {
+        #languageFilter, #perPage {
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -65,6 +73,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background 0.3s;
         }
         button:hover {
             background: #5a7bd6;
@@ -86,6 +95,7 @@
             margin-bottom: 10px;
             display: flex;
             gap: 15px;
+            flex-wrap: wrap;
         }
         .task-content {
             color: #555;
@@ -99,6 +109,7 @@
             color: white;
             border-radius: 4px;
             text-decoration: none;
+            transition: background 0.3s;
         }
         .solve-btn:hover {
             background: #5a7bd6;
@@ -108,6 +119,7 @@
             justify-content: center;
             gap: 10px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
         .pagination button {
             min-width: 80px;
@@ -126,10 +138,23 @@
             padding: 10px;
             background: #fdecea;
             border-radius: 4px;
+            margin: 20px 0;
         }
         .solved {
             background-color: #e6f7e6;
             border-left: 4px solid #4CAF50;
+        }
+        @media (max-width: 768px) {
+            .controls-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .control-group {
+                width: 100%;
+            }
+            #searchInput {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -152,7 +177,7 @@
 
     <div class="controls-container">
         <div class="control-group">
-            <input type="text" id="searchInput" placeholder="Поиск по названию...">
+            <input type="text" id="searchInput" placeholder="Поиск по названию или условию...">
             <select id="languageFilter">
                 <option value="">Все языки</option>
                 <option value="cpp">C++</option>
@@ -166,40 +191,62 @@
         
         <div class="control-group">
             <label for="perPage">Задач на странице:</label>
-            <select id="perPage" onchange="changePerPage()">
+            <select id="perPage">
+                <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="20" selected>20</option>
                 <option value="50">50</option>
-                <option value="100">100</option>
             </select>
         </div>
     </div>
 
     <div id="tasksContainer">
-        <!-- Задачи будут загружены здесь -->
+        <p>Загрузка задач...</p>
     </div>
 
     <div class="pagination">
         <button id="prevPage" onclick="changePage(-1)">Назад</button>
-        <div class="page-info" id="pageInfo">Страница 1</div>
+        <div class="page-info" id="pageInfo">Страница 1 из 1</div>
         <button id="nextPage" onclick="changePage(1)">Вперед</button>
     </div>
 
     <script>
-        // Глобальные переменные
-        let allTasks = [];
-        let filteredTasks = [];
-        let currentPage = 1;
-        let tasksPerPage = 20;
-        let currentFilters = {
-            search: '',
-            language: ''
+        // Глобальные переменные состояния
+        const state = {
+            allTasks: [],
+            filteredTasks: [],
+            currentPage: 1,
+            tasksPerPage: 20,
+            filters: {
+                search: '',
+                language: ''
+            }
         };
 
-        // Проверка авторизации
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) window.location.href = '/';
-        document.getElementById('username').textContent = user.username;
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Проверка авторизации
+            const user = JSON.parse(localStorage.getItem('user'));
+            const token = localStorage.getItem('token');
+            
+            if (!user || !token) {
+                window.location.href = '/';
+                return;
+            }
+
+            document.getElementById('username').textContent = user.username;
+            document.getElementById('perPage').value = state.tasksPerPage;
+            document.getElementById('perPage').addEventListener('change', changePerPage);
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('languageFilter').addEventListener('change', applyFilters);
+
+            try {
+                await Promise.all([loadUserData(), loadTasks()]);
+            } catch (error) {
+                console.error('Ошибка инициализации:', error);
+                showError('Не удалось загрузить данные. Пожалуйста, обновите страницу.');
+            }
+        });
 
         // Загрузка данных пользователя
         async function loadUserData() {
@@ -209,22 +256,25 @@
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
-                const data = await response.json();
                 
-                if (response.ok) {
-                    document.getElementById('solvedCount').textContent = data.solved || 0;
-                    document.getElementById('lastActive').textContent = 
-                        new Date(data.lastActive).toLocaleDateString();
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                
+                const data = await response.json();
+                document.getElementById('solvedCount').textContent = data.solved || 0;
+                document.getElementById('lastActive').textContent = 
+                    data.lastActive ? new Date(data.lastActive).toLocaleDateString() : 'Сегодня';
             } catch (error) {
-                console.error('Error loading user stats:', error);
+                console.error('Ошибка загрузки данных пользователя:', error);
+                throw error;
             }
         }
 
-        // Загрузка задач
+        // Загрузка задач с сервера
         async function loadTasks() {
             try {
-                document.getElementById('tasksContainer').innerHTML = '<p>Загрузка задач...</p>';
+                showLoading();
                 
                 const response = await fetch('/api/active-tasks', {
                     headers: {
@@ -232,35 +282,36 @@
                     }
                 });
                 
-                if (!response.ok) throw new Error('Ошибка загрузки задач');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 
-                allTasks = await response.json();
+                state.allTasks = await response.json();
                 applyFilters();
             } catch (error) {
-                console.error('Ошибка:', error);
-                document.getElementById('tasksContainer').innerHTML = `
-                    <div class="error">Не удалось загрузить задачи: ${error.message}</div>
-                `;
+                console.error('Ошибка загрузки задач:', error);
+                showError('Не удалось загрузить задачи. Пожалуйста, попробуйте позже.');
+                throw error;
             }
         }
 
         // Применение фильтров
         function applyFilters() {
-            currentFilters = {
+            state.filters = {
                 search: document.getElementById('searchInput').value.toLowerCase(),
                 language: document.getElementById('languageFilter').value
             };
             
-            filteredTasks = allTasks.filter(task => {
-                const matchesSearch = task.title.toLowerCase().includes(currentFilters.search) || 
-                                    task.content.toLowerCase().includes(currentFilters.search);
-                const matchesLanguage = !currentFilters.language || 
-                                      task.language === currentFilters.language;
+            state.filteredTasks = state.allTasks.filter(task => {
+                const matchesSearch = task.title.toLowerCase().includes(state.filters.search) || 
+                                    task.content.toLowerCase().includes(state.filters.search);
+                const matchesLanguage = !state.filters.language || 
+                                      task.language === state.filters.language;
                 
                 return matchesSearch && matchesLanguage;
             });
             
-            currentPage = 1;
+            state.currentPage = 1;
             renderTasks();
         }
 
@@ -274,22 +325,23 @@
         // Отображение задач
         function renderTasks() {
             const container = document.getElementById('tasksContainer');
-            const startIndex = (currentPage - 1) * tasksPerPage;
-            const paginatedTasks = filteredTasks.slice(startIndex, startIndex + tasksPerPage);
             
-            if (paginatedTasks.length === 0) {
-                container.innerHTML = '<p>Задачи не найдены. Измените параметры поиска.</p>';
+            if (state.filteredTasks.length === 0) {
+                container.innerHTML = '<div class="error">Задачи не найдены. Попробуйте изменить параметры поиска.</div>';
+                updatePaginationControls();
                 return;
             }
 
+            const startIndex = (state.currentPage - 1) * state.tasksPerPage;
+            const paginatedTasks = state.filteredTasks.slice(startIndex, startIndex + state.tasksPerPage);
+
             container.innerHTML = paginatedTasks.map(task => `
-                <div class="task-card">
-                    <h3>${task.title}</h3>
+                <div class="task-card ${isTaskSolved(task.id) ? 'solved' : ''}">
+                    <h3>${escapeHtml(task.title)}</h3>
                     <div class="task-meta">
                         <span>Язык: ${getLanguageName(task.language)}</span>
-                        ${task.rating ? `<span>Рейтинг: ${task.rating}</span>` : ''}
                     </div>
-                    <div class="task-content">${task.content.substring(0, 150)}...</div>
+                    <div class="task-content">${truncateText(escapeHtml(task.content), 150)}</div>
                     <a href="/task.html?id=${task.id}" class="solve-btn">Решить задачу</a>
                 </div>
             `).join('');
@@ -297,29 +349,36 @@
             updatePaginationControls();
         }
 
-        // Обновление пагинации
+        // Обновление элементов пагинации
         function updatePaginationControls() {
-            const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
-            document.getElementById('pageInfo').textContent = `Страница ${currentPage} из ${totalPages}`;
+            const totalPages = Math.ceil(state.filteredTasks.length / state.tasksPerPage) || 1;
+            document.getElementById('pageInfo').textContent = `Страница ${state.currentPage} из ${totalPages}`;
             
-            document.getElementById('prevPage').disabled = currentPage <= 1;
-            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+            document.getElementById('prevPage').disabled = state.currentPage <= 1;
+            document.getElementById('nextPage').disabled = state.currentPage >= totalPages;
         }
 
         // Смена страницы
         function changePage(offset) {
-            currentPage += offset;
+            state.currentPage += offset;
             renderTasks();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // Изменение количества задач на странице
         function changePerPage() {
-            tasksPerPage = parseInt(document.getElementById('perPage').value);
-            currentPage = 1;
+            state.tasksPerPage = parseInt(document.getElementById('perPage').value);
+            state.currentPage = 1;
             renderTasks();
         }
 
-        // Вспомогательная функция для получения названия языка
+        // Проверка, решена ли задача
+        function isTaskSolved(taskId) {
+            const solvedTasks = JSON.parse(localStorage.getItem('solvedTasks')) || {};
+            return solvedTasks[taskId] === true;
+        }
+
+        // Вспомогательные функции
         function getLanguageName(code) {
             const languages = {
                 'cpp': 'C++',
@@ -330,22 +389,36 @@
             return languages[code] || code;
         }
 
-        // Выход
+        function truncateText(text, maxLength) {
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function showLoading() {
+            document.getElementById('tasksContainer').innerHTML = '<p>Загрузка задач...</p>';
+        }
+
+        function showError(message) {
+            document.getElementById('tasksContainer').innerHTML = `
+                <div class="error">${message}</div>
+            `;
+        }
+
+        // Выход из системы
         function logout() {
             localStorage.removeItem('user');
             localStorage.removeItem('token');
+            localStorage.removeItem('solvedTasks');
             window.location.href = '/';
         }
-
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', () => {
-            loadUserData();
-            loadTasks();
-            
-            // Добавляем обработчики для мгновенного поиска
-            document.getElementById('searchInput').addEventListener('input', applyFilters);
-            document.getElementById('languageFilter').addEventListener('change', applyFilters);
-        });
     </script>
 </body>
 </html>

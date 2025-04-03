@@ -211,24 +211,10 @@ app.delete('/api/tasks/:id', checkAdmin, async (req, res) => {
 });
 
 // Получение всех активных задач (для пользователей)
-// app.get('/api/active-tasks', async (req, res) => {
-//   try {
-//     const result = await pool.query(
-//       `SELECT id, title, content, language 
-//        FROM tasks 
-//        WHERE is_active = true
-//        ORDER BY created_at DESC`
-//     );
-//     res.json(result.rows);
-//   } catch (err) {
-//     console.error('Ошибка при получении задач:', err);
-//     res.status(500).json({ error: 'Ошибка сервера' });
-//   }
-// });
 app.get('/api/active-tasks', async (req, res) => {
   try {
       const { search, language } = req.query;
-      let query = `SELECT id, title, content, language, rating 
+      let query = `SELECT id, title, content, language 
                    FROM tasks WHERE is_active = true`;
       
       const params = [];
