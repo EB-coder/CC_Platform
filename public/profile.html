@@ -101,6 +101,19 @@
             color: #555;
             margin: 10px 0;
             line-height: 1.5;
+            max-height: 60px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .task-content::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            
         }
         .solve-btn {
             display: inline-block;
@@ -324,30 +337,32 @@
 
         // Отображение задач
         function renderTasks() {
-            const container = document.getElementById('tasksContainer');
-            
-            if (state.filteredTasks.length === 0) {
-                container.innerHTML = '<div class="error">Задачи не найдены. Попробуйте изменить параметры поиска.</div>';
-                updatePaginationControls();
-                return;
-            }
-
-            const startIndex = (state.currentPage - 1) * state.tasksPerPage;
-            const paginatedTasks = state.filteredTasks.slice(startIndex, startIndex + state.tasksPerPage);
-
-            container.innerHTML = paginatedTasks.map(task => `
-                <div class="task-card ${isTaskSolved(task.id) ? 'solved' : ''}">
-                    <h3>${escapeHtml(task.title)}</h3>
-                    <div class="task-meta">
-                        <span>Язык: ${getLanguageName(task.language)}</span>
-                    </div>
-                    <div class="task-content">${truncateText(escapeHtml(task.content), 150)}</div>
-                    <a href="/task.html?id=${task.id}" class="solve-btn">Решить задачу</a>
-                </div>
-            `).join('');
-            
+        const container = document.getElementById('tasksContainer');
+        
+        if (state.filteredTasks.length === 0) {
+            container.innerHTML = '<div class="error">Задачи не найдены. Попробуйте изменить параметры поиска.</div>';
             updatePaginationControls();
+            return;
         }
+
+        const startIndex = (state.currentPage - 1) * state.tasksPerPage;
+        const paginatedTasks = state.filteredTasks.slice(startIndex, startIndex + state.tasksPerPage);
+
+        container.innerHTML = paginatedTasks.map(task => `
+        <div class="task-card ${isTaskSolved(task.id) ? 'solved' : ''}">
+            <h3>${escapeHtml(task.title)}</h3>
+            <div class="task-meta">
+                <span>Язык: ${getLanguageName(task.language)}</span>
+            </div>
+            <div class="task-content">
+                ${truncateText(escapeHtml(task.content), 100)}
+            </div>
+            <a href="/task.html?id=${task.id}" class="solve-btn">Решить задачу</a>
+        </div>
+    `).join('');
+        
+        updatePaginationControls();
+    }
 
         // Обновление элементов пагинации
         function updatePaginationControls() {

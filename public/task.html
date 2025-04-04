@@ -117,6 +117,14 @@
         .back-btn:hover {
             background: #7f8c8d;
         }
+        .full-task-content {
+            white-space: pre-wrap;
+            line-height: 1.6;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -177,38 +185,30 @@
 
         // Загрузка данных задачи
         async function loadTask() {
-            try {
-                const response = await fetch(`/api/tasks/${taskId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Не удалось загрузить задачу');
-                }
-
-                const task = await response.json();
-                
-                // Заполняем данные задачи
-                document.getElementById('taskTitle').textContent = task.title;
-                document.getElementById('taskContent').innerHTML = task.content;
-                document.getElementById('language').value = task.language;
-                
-                // Дополнительные метаданные (если есть)
-                if (task.rating) {
-                    document.getElementById('taskRating').textContent = `Рейтинг: ${task.rating}`;
-                }
-                if (task.solved_count) {
-                    document.getElementById('taskSolved').textContent = `Решений: ${task.solved_count}`;
-                }
-
-            } catch (error) {
-                console.error('Ошибка загрузки задачи:', error);
-                document.getElementById('taskContent').innerHTML = 
-                    `<p class="error">Ошибка загрузки задачи: ${error.message}</p>`;
+    try {
+        const response = await fetch(`/api/tasks/${taskId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
-        }
+        });
+
+        if (!response.ok) throw new Error('Не удалось загрузить задачу');
+
+        const task = await response.json();
+        
+        document.getElementById('taskTitle').textContent = task.title;
+        document.getElementById('taskContent').innerHTML = `
+            <div class="full-task-content">
+                ${task.content}
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Ошибка загрузки задачи:', error);
+        document.getElementById('taskContent').innerHTML = 
+            `<p class="error">Ошибка загрузки задачи: ${error.message}</p>`;
+    }
+}
 
         // Отправка решения
         async function submitSolution() {
