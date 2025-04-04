@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Решение задачи</title>
+    <style>
+        /* Аналогичные стили из task.html */
+        .code-block {
+            font-family: monospace;
+            white-space: pre-wrap;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .feedback-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button onclick="window.history.back()" class="back-btn">← Назад</button>
+        <h1 id="solutionTitle">Решение задачи</h1>
+    </div>
+
+    <div class="task-container">
+        <h2 id="taskTitle"></h2>
+        <p>Язык: <span id="solutionLanguage"></span></p>
+        <p>Статус: <span id="solutionStatus"></span></p>
+        <p>Оценка: <span id="solutionScore"></span></p>
+        <p>Отправлено: <span id="solutionDate"></span></p>
+        
+        <h3>Ваш код:</h3>
+        <div class="code-block" id="solutionCode"></div>
+        
+        <div class="feedback-section" id="feedbackSection">
+            <h3>Фидбек от DeepSeek:</h3>
+            <p id="solutionFeedback"></p>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const solutionId = urlParams.get('id');
+        const user = JSON.parse(localStorage.getItem('user'));
+        
+        if (!user) window.location.href = '/';
+
+        async function loadSolution() {
+            try {
+                const response = await fetch(`/api/solutions/${solutionId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Не удалось загрузить решение');
+                
+                const solution = await response.json();
+                renderSolution(solution);
+            } catch (error) {
+                document.querySelector('.task-container').innerHTML = `
+                    <div class="error">Ошибка загрузки решения: ${error.message}</div>
+                `;
+            }
+        }
+
+        function renderSolution(solution) {
+            document.getElementById('solutionTitle').textContent = `Решение задачи: ${solution.task_title}`;
+            document.getElementById('taskTitle').textContent = solution.task_title;
+            document.getElementById('solutionLanguage').textContent = getLanguageName(solution.language);
+            document.getElementById('solutionStatus').textContent = solution.status;
+            document.getElementById('solutionScore').textContent = solution.score || 'еще не оценено';
+            document.getElementById('solutionDate').textContent = new Date(solution.submitted_at).toLocaleString();
+            document.getElementById('solutionCode').textContent = solution.code;
+            
+            if (solution.feedback) {
+                document.getElementById('solutionFeedback').textContent = solution.feedback;
+            } else {
+                document.getElementById('feedbackSection').style.display = 'none';
+            }
+        }
+
+        function getLanguageName(code) {
+            const languages = {
+                'cpp': 'C++', 'python': 'Python', 
+                'java': 'Java', 'javascript': 'JavaScript'
+            };
+            return languages[code] || code;
+        }
+
+        loadSolution();
+    </script>
+</body>
+</html>

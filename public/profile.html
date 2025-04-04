@@ -174,7 +174,10 @@
 <body>
     <div class="header">
         <h1>Добро пожаловать, <span id="username"></span>!</h1>
-        <button onclick="logout()">Выйти</button>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="window.location.href='/solutions.html'">Мои решения</button>
+            <button onclick="logout()">Выйти</button>
+        </div>
     </div>
 
     <div class="stats-container">

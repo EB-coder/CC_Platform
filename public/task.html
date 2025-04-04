@@ -186,27 +186,73 @@
         // Загрузка данных задачи
         async function loadTask() {
     try {
-        const response = await fetch(`/api/tasks/${taskId}`, {
+        const taskId = new URLSearchParams(window.location.search).get('id');
+        if (!taskId) {
+            throw new Error('ID задачи не указан в URL');
+        }
+
+        // Загружаем саму задачу
+        const taskResponse = await fetch(`/api/tasks/${taskId}`, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Accept': 'application/json'
             }
         });
 
-        if (!response.ok) throw new Error('Не удалось загрузить задачу');
+        if (!taskResponse.ok) {
+            const errorData = await taskResponse.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Ошибка загрузки задачи');
+        }
 
-        const task = await response.json();
+        const task = await taskResponse.json();
+
+        // Отображаем задачу
+        document.getElementById('taskTitle').textContent = task.title || 'Без названия';
         
-        document.getElementById('taskTitle').textContent = task.title;
-        document.getElementById('taskContent').innerHTML = `
+        // Создаем контейнер для условия задачи
+        const taskContent = document.getElementById('taskContent');
+        taskContent.innerHTML = `
             <div class="full-task-content">
-                ${task.content}
+                ${task.content || 'Условие задачи отсутствует'}
             </div>
         `;
-        
+
+        // Проверяем, решена ли задача (делаем это после загрузки основной задачи)
+        try {
+            const solvedResponse = await fetch(`/api/check-solved?task_id=${taskId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (solvedResponse.ok) {
+                const isSolved = await solvedResponse.json();
+                if (isSolved.solved) {
+                    taskContent.parentElement.classList.add('solved');
+                    const bannerHTML = `
+                        <div class="solved-banner">
+                            <p>Вы уже решили эту задачу!</p>
+                            <button onclick="window.location.href='/solution-detail.html?id=${isSolved.solution_id}'">
+                                Посмотреть решение
+                            </button>
+                        </div>
+                    `;
+                    taskContent.insertAdjacentHTML('afterend', bannerHTML);
+                }
+            }
+        } catch (solvedError) {
+            console.error('Ошибка проверки решения:', solvedError);
+        }
+
     } catch (error) {
         console.error('Ошибка загрузки задачи:', error);
-        document.getElementById('taskContent').innerHTML = 
-            `<p class="error">Ошибка загрузки задачи: ${error.message}</p>`;
+        document.getElementById('taskContent').innerHTML = `
+            <div class="error">
+                Ошибка загрузки задачи: ${error.message}
+                <p>Попробуйте <a href="/profile.html">вернуться к списку задач</a></p>
+            </div>
+        `;
     }
 }
 

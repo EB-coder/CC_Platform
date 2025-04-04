@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои решения</title>
+    <style>
+        /* Стили аналогичные profile.html */
+        .solution-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .solution-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .solution-score {
+            font-weight: bold;
+            color: #2ecc71;
+        }
+        .solution-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .code-block {
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Мои решения</h1>
+        <button onclick="window.location.href='/profile.html'">Назад к задачам</button>
+    </div>
+
+    <div id="solutionsContainer">
+        <p>Загрузка решений...</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) window.location.href = '/';
+
+            try {
+                const response = await fetch('/api/user-solutions', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Ошибка загрузки решений');
+                
+                const solutions = await response.json();
+                renderSolutions(solutions);
+            } catch (error) {
+                document.getElementById('solutionsContainer').innerHTML = `
+                    <div class="error">Ошибка загрузки решений: ${error.message}</div>
+                `;
+            }
+        });
+
+        function renderSolutions(solutions) {
+            const container = document.getElementById('solutionsContainer');
+            
+            if (solutions.length === 0) {
+                container.innerHTML = '<p>У вас пока нет решений</p>';
+                return;
+            }
+            
+            container.innerHTML = solutions.map(solution => `
+                <div class="solution-card">
+                    <div class="solution-header">
+                        <h3>${solution.task_title}</h3>
+                        ${solution.score ? 
+                            `<span class="solution-score">Оценка: ${solution.score}/100</span>` : 
+                            '<span>На проверке...</span>'}
+                    </div>
+                    <p>Язык: ${getLanguageName(solution.language)}</p>
+                    <p>Отправлено: ${new Date(solution.submitted_at).toLocaleString()}</p>
+                    
+                    ${solution.feedback ? `
+                        <div class="solution-feedback">
+                            <h4>Фидбек от DeepSeek:</h4>
+                            <p>${solution.feedback}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <button onclick="viewSolution(${solution.id})">Подробнее</button>
+                </div>
+            `).join('');
+        }
+
+        function viewSolution(id) {
+            window.location.href = `/solution-detail.html?id=${id}`;
+        }
+
+        function getLanguageName(code) {
+            const languages = {
+                'cpp': 'C++', 'python': 'Python', 
+                'java': 'Java', 'javascript': 'JavaScript'
+            };
+            return languages[code] || code;
+        }
+    </script>
+</body>
+</html>

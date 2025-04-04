@@ -65,6 +65,26 @@ function checkAdmin(req, res, next) {
   }
 }
 
+function checkAuth(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1] || 
+                req.query.token || 
+                req.cookies.token;
+  
+  if (!token) {
+    console.log('❌ Токен не предоставлен');
+    return res.status(401).json({ error: 'Требуется авторизация' });
+  }
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key');
+    req.user = decoded;
+    next();
+  } catch (err) {
+    console.log('❌ Ошибка токена:', err.message);
+    res.status(401).json({ error: 'Недействительный токен' });
+  }
+}
+
 
 // Регистрация
 app.post('/register', async (req, res) => {
@@ -245,7 +265,7 @@ app.post('/api/submissions', async (req, res) => {
       
       // Проверяем существование задачи
       const taskCheck = await pool.query(
-          'SELECT id FROM tasks WHERE id = $1 AND is_active = true',
+          'SELECT id, content FROM tasks WHERE id = $1 AND is_active = true',
           [task_id]
       );
       
@@ -254,24 +274,55 @@ app.post('/api/submissions', async (req, res) => {
       }
 
       // Сохраняем решение
-      const result = await pool.query(
-          `INSERT INTO submissions 
+      const solutionResult = await pool.query(
+          `INSERT INTO solutions 
            (task_id, user_id, language, code, status) 
            VALUES ($1, $2, $3, $4, 'pending') 
            RETURNING *`,
           [task_id, user_id, language, code]
       );
 
+      // Асинхронно отправляем на оценку в DeepSeek
+      setTimeout(async () => {
+          try {
+              const evaluation = await evaluateWithDeepSeek(
+                  code, 
+                  language, 
+                  taskCheck.rows[0].content
+              );
+              
+              await pool.query(
+                  `UPDATE solutions SET 
+                   status = $1, score = $2, feedback = $3, evaluated_at = NOW()
+                   WHERE id = $4`,
+                  [evaluation.status, evaluation.score, evaluation.feedback, solutionResult.rows[0].id]
+              );
+              
+              // Если решение успешное, добавляем в решенные
+              if (evaluation.score >= 70) { // Порог успешности
+                  await pool.query(
+                      `INSERT INTO user_solved_tasks (user_id, task_id, solution_id)
+                       VALUES ($1, $2, $3)
+                       ON CONFLICT (user_id, task_id) DO UPDATE
+                       SET solution_id = $3, solved_at = NOW()`,
+                      [user_id, task_id, solutionResult.rows[0].id]
+                  );
+              }
+          } catch (e) {
+              console.error('Ошибка оценки решения:', e);
+          }
+      }, 0);
+
       res.json({ 
           success: true,
-          submission: result.rows[0]
+          solution: solutionResult.rows[0]
       });
 
   } catch (err) {
       console.error('Ошибка при сохранении решения:', err);
       res.status(500).json({ error: 'Ошибка сервера' });
   }
-})
+});
 
 // Обновление видимости задачи
 app.patch('/api/tasks/:id/visibility', checkAdmin, async (req, res) => {
@@ -294,6 +345,78 @@ app.patch('/api/tasks/:id/visibility', checkAdmin, async (req, res) => {
       res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
+
+// Получение решенных задач пользователя
+app.get('/api/user-solutions', checkAuth, async (req, res) => {
+  try {
+      const result = await pool.query(`
+          SELECT s.*, t.title as task_title
+          FROM solutions s
+          JOIN tasks t ON s.task_id = t.id
+          WHERE s.user_id = $1
+          ORDER BY s.submitted_at DESC
+      `, [req.user.id]);
+      
+      res.json(result.rows);
+  } catch (err) {
+      console.error('Ошибка загрузки решений:', err);
+      res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Получение конкретного решения с фидбеком
+app.get('/api/solutions/:id', checkAuth, async (req, res) => {
+  try {
+      const result = await pool.query(`
+          SELECT s.*, t.title as task_title, t.content as task_content
+          FROM solutions s
+          JOIN tasks t ON s.task_id = t.id
+          WHERE s.id = $1 AND s.user_id = $2
+      `, [req.params.id, req.user.id]);
+      
+      if (result.rows.length === 0) {
+          return res.status(404).json({ error: 'Решение не найдено' });
+      }
+      
+      res.json(result.rows[0]);
+  } catch (err) {
+      console.error('Ошибка загрузки решения:', err);
+      res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Интеграция с DeepSeek для оценки решений
+async function evaluateWithDeepSeek(code, language, taskContent) {
+  try {
+      const response = await fetch('https://api.deepseek.com/v1/evaluate', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+          },
+          body: JSON.stringify({
+              code,
+              language,
+              task_description: taskContent
+          })
+      });
+      
+      if (!response.ok) {
+          throw new Error('Ошибка оценки решения');
+      }
+      
+      return await response.json();
+  } catch (error) {
+      console.error('DeepSeek API error:', error);
+      return {
+          score: 0,
+          feedback: "Не удалось оценить решение",
+          status: "error"
+      };
+  }
+}
+
+
 
 // Статические файлы
 app.get('/admin.html', (req, res) => {
