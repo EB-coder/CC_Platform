@@ -1,365 +1,362 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codeforces Task</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
-    <link rel="manifest" href="images/site.webmanifest">
-    <meta name="theme-color" content="#7494ec">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
-            padding: 20px;
-            line-height: 1.6;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .task-container {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .task-title {
-            color: #3a86ff;
-            font-size: 1.5em;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-        }
-        .task-meta {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            font-size: 0.95em;
-            color: #555;
-        }
-        .task-content {
-            margin-bottom: 30px;
-        }
-        .section-title {
-            font-weight: bold;
-            margin: 20px 0 10px;
-            color: #444;
-        }
-        .submit-form {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-family: 'Poppins', sans-serif;
-        }
-        textarea {
-            min-height: 150px;
-            resize: vertical;
-        }
-        .file-upload {
-            border: 2px dashed #ccc;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-        button {
-            padding: 10px 20px;
-            background: #7494ec;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        button:hover {
-            background: #5a7bd6;
-        }
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            color: #3a86ff;
-            text-decoration: none;
-        }
-        .error {
-            color: #e74c3c;
-            padding: 10px;
-            background: #fdecea;
-            border-radius: 4px;
-        }
-        .solved {
-            border-left: 4px solid #2ecc71;
-            background-color: #f0fdf4;
-        }
-        .back-btn {
-            background: #95a5a6;
-        }
-        .back-btn:hover {
-            background: #7f8c8d;
-        }
-        .full-task-content {
-            white-space: pre-wrap;
-            line-height: 1.6;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Задача Codeforces</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png" />
+  <link rel="manifest" href="images/site.webmanifest" />
+  <meta name="theme-color" content="#7494ec" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .task-container {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .task-title {
+      color: #3a86ff;
+      font-size: 1.5em;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .task-meta {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      font-size: 0.95em;
+      color: #555;
+    }
+
+    .submit-form {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .file-upload {
+      border: 2px dashed #ccc;
+      padding: 20px;
+      text-align: center;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: border-color 0.3s ease;
+    }
+
+    .file-upload:hover {
+      border-color: #7494ec;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #7494ec;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    button:hover {
+      background: #5a7bd6;
+    }
+
+    .back-btn {
+      background: #95a5a6;
+    }
+
+    .back-btn:hover {
+      background: #7f8c8d;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #3a86ff;
+      text-decoration: none;
+    }
+
+    .error {
+      color: #e74c3c;
+      padding: 10px;
+      background: #fdecea;
+      border-radius: 4px;
+    }
+
+    .solved {
+      border-left: 4px solid #2ecc71;
+      background-color: #f0fdf4;
+    }
+
+    .solved-banner {
+      padding: 15px;
+      background: #e1f6e8;
+      border-radius: 6px;
+      margin-top: 15px;
+      border: 1px solid #b9e4c9;
+    }
+
+    .full-task-content {
+      white-space: pre-wrap;
+      line-height: 1.6;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <div>
-            <button onclick="goBack()" class="back-btn" style="margin-right: 10px;">← Назад</button>
-            <h1 id="taskTitle">Задача</h1>
-        </div>
-        <button onclick="logout()">Выйти</button>
+  <div class="header">
+    <div class="header-title">
+      <button onclick="goBack()" class="back-btn">← Назад</button>
+      <h1 id="taskTitle">Задача</h1>
+    </div>
+    <button onclick="logout()">Выйти</button>
+  </div>
+
+  <div class="task-container" id="taskContainer">
+    <div class="task-meta">
+      <p>Условие задачи</p>
+    </div>
+    <div class="task-content" id="taskContent"></div>
+  </div>
+
+  <div class="submit-form">
+    <h2>Отправить решение</h2>
+    <div class="form-group">
+      <label for="language">Язык программирования:</label>
+      <select id="language">
+        <option value="cpp">C++</option>
+        <option value="java">Java</option>
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+      </select>
     </div>
 
-    <div class="task-container">
-        <div class="task-meta">
-            <p>Условие задачи</p>
-        </div>
-        
-        <div class="task-content" id="taskContent">
-            <!-- Условие задачи будет загружено здесь -->
-        </div>
+    <div class="form-group">
+      <label>Решение:</label>
+      <div class="file-upload" id="fileUpload">
+        <p>Перетащите файл сюда или кликните для выбора</p>
+        <input type="file" id="codeFile" style="display: none;" />
+      </div>
+      <p>Или введите код вручную:</p>
+      <textarea id="codeInput" placeholder="Введите ваш код здесь..."></textarea>
     </div>
 
-    <div class="submit-form">
-        <h2>Отправить решение</h2>
-        
-        <div class="form-group">
-            <label for="language">Язык программирования:</label>
-            <select id="language">
-                <option value="cpp">C++</option>
-                <option value="java">Java</option>
-                <option value="python">Python</option>
-                <option value="javascript">JavaScript</option>
-            </select>
-        </div>
-        
-        <div class="form-group">
-            <label>Решение:</label>
-            <div class="file-upload" id="fileUpload">
-                <p>Перетащите файл сюда или кликните для выбора</p>
-                <input type="file" id="codeFile" style="display: none;">
-            </div>
-            <p>Или введите код вручную:</p>
-            <textarea id="codeInput" placeholder="Введите ваш код здесь..."></textarea>
-        </div>
-        
-        <button onclick="submitSolution()">Отправить</button>
-    </div>
+    <button onclick="submitSolution()">Отправить</button>
+  </div>
 
-    <a href="/profile.html" class="back-link">← Вернуться к списку задач</a>
+  <a href="/profile.html" class="back-link">← Вернуться к списку задач</a>
 
-    <script>
-        // Получаем параметры из URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const taskId = urlParams.get('id');
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const taskId = urlParams.get("id");
 
-        // Проверка авторизации
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) window.location.href = '/';
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) window.location.href = "/";
 
-        // Загрузка данных задачи
-        async function loadTask() {
-    try {
-        const taskId = new URLSearchParams(window.location.search).get('id');
-        if (!taskId) {
-            throw new Error('ID задачи не указан в URL');
-        }
-
-        // Загружаем саму задачу
+    async function loadTask() {
+      try {
         const taskResponse = await fetch(`/api/tasks/${taskId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Accept': 'application/json'
-            }
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Accept: "application/json",
+          },
         });
 
         if (!taskResponse.ok) {
-            const errorData = await taskResponse.json().catch(() => ({}));
-            throw new Error(errorData.error || 'Ошибка загрузки задачи');
+          const errorData = await taskResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || "Ошибка загрузки задачи");
         }
 
         const task = await taskResponse.json();
+        document.getElementById("taskTitle").textContent = task.title || "Без названия";
 
-        // Отображаем задачу
-        document.getElementById('taskTitle').textContent = task.title || 'Без названия';
-        
-        // Создаем контейнер для условия задачи
-        const taskContent = document.getElementById('taskContent');
+        const taskContent = document.getElementById("taskContent");
         taskContent.innerHTML = `
-            <div class="full-task-content">
-                ${task.content || 'Условие задачи отсутствует'}
-            </div>
+          <div class="full-task-content">
+            ${task.content || "Условие задачи отсутствует"}
+          </div>
         `;
 
-        // Проверяем, решена ли задача (делаем это после загрузки основной задачи)
-        try {
-            const solvedResponse = await fetch(`/api/check-solved?task_id=${taskId}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Accept': 'application/json'
-                }
-            });
+        const solvedResponse = await fetch(`/api/check-solved?task_id=${taskId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Accept: "application/json",
+          },
+        });
 
-            if (solvedResponse.ok) {
-                const isSolved = await solvedResponse.json();
-                if (isSolved.solved) {
-                    taskContent.parentElement.classList.add('solved');
-                    const bannerHTML = `
-                        <div class="solved-banner">
-                            <p>Вы уже решили эту задачу!</p>
-                            <button onclick="window.location.href='/solution-detail.html?id=${isSolved.solution_id}'">
-                                Посмотреть решение
-                            </button>
-                        </div>
-                    `;
-                    taskContent.insertAdjacentHTML('afterend', bannerHTML);
-                }
-            }
-        } catch (solvedError) {
-            console.error('Ошибка проверки решения:', solvedError);
+        if (solvedResponse.ok) {
+          const isSolved = await solvedResponse.json();
+          if (isSolved.solved) {
+            document.getElementById("taskContainer").classList.add("solved");
+            const bannerHTML = `
+              <div class="solved-banner">
+                <p>Вы уже решили эту задачу!</p>
+                <button onclick="window.location.href='/solution-detail.html?id=${isSolved.solution_id}'">
+                  Посмотреть решение
+                </button>
+              </div>
+            `;
+            taskContent.insertAdjacentHTML("afterend", bannerHTML);
+          }
         }
-
-    } catch (error) {
-        console.error('Ошибка загрузки задачи:', error);
-        document.getElementById('taskContent').innerHTML = `
-            <div class="error">
-                Ошибка загрузки задачи: ${error.message}
-                <p>Попробуйте <a href="/profile.html">вернуться к списку задач</a></p>
-            </div>
+      } catch (error) {
+        console.error("Ошибка загрузки задачи:", error);
+        document.getElementById("taskContent").innerHTML = `
+          <div class="error">
+            Ошибка загрузки задачи: ${error.message}
+            <p>Попробуйте <a href="/profile.html">вернуться к списку задач</a></p>
+          </div>
         `;
+      }
     }
-}
 
-        // Отправка решения
-        async function submitSolution() {
-            const language = document.getElementById('language').value;
-            const code = document.getElementById('codeInput').value;
+    async function submitSolution() {
+      const language = document.getElementById("language").value;
+      const code = document.getElementById("codeInput").value;
 
-            if (!code.trim()) {
-                alert('Пожалуйста, введите код или загрузите файл');
-                return;
-            }
+      if (!code.trim()) {
+        alert("Пожалуйста, введите код или загрузите файл");
+        return;
+      }
 
-            try {
-                const response = await fetch('/api/submissions', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ 
-                        task_id: taskId, 
-                        language, 
-                        code,
-                        user_id: user.id 
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'Ошибка отправки решения');
-                }
-
-                alert('Решение отправлено на проверку!');
-                
-                // Помечаем задачу как решенную локально
-                const solvedTasks = JSON.parse(localStorage.getItem('solvedTasks')) || {};
-                solvedTasks[taskId] = true;
-                localStorage.setItem('solvedTasks', JSON.stringify(solvedTasks));
-                
-                // Обновляем UI
-                document.querySelector('.task-container').classList.add('solved');
-
-            } catch (error) {
-                console.error('Ошибка отправки решения:', error);
-                alert(`Ошибка: ${error.message}`);
-            }
-        }
-
-        // Обработчики для загрузки файла
-        document.getElementById('fileUpload').addEventListener('click', () => {
-            document.getElementById('codeFile').click();
+      try {
+        const response = await fetch("/api/submissions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            task_id: taskId,
+            language,
+            code,
+            user_id: user.id,
+          }),
         });
 
-        document.getElementById('codeFile').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    document.getElementById('codeInput').value = event.target.result;
-                };
-                reader.readAsText(file);
-            }
-        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Ошибка отправки решения");
 
-        // Drag and drop
-        const fileUpload = document.getElementById('fileUpload');
-        fileUpload.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileUpload.style.borderColor = '#7494ec';
-        });
+        alert("Решение отправлено на проверку!");
 
-        fileUpload.addEventListener('dragleave', () => {
-            fileUpload.style.borderColor = '#ccc';
-        });
+        const solvedTasks = JSON.parse(localStorage.getItem("solvedTasks")) || {};
+        solvedTasks[taskId] = true;
+        localStorage.setItem("solvedTasks", JSON.stringify(solvedTasks));
 
-        fileUpload.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileUpload.style.borderColor = '#ccc';
-            
-            const file = e.dataTransfer.files[0];
-            if (file && file.name.match(/\.(cpp|java|py|js)$/i)) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    document.getElementById('codeInput').value = event.target.result;
-                };
-                reader.readAsText(file);
-            } else {
-                alert('Пожалуйста, загрузите файл с кодом (.cpp, .java, .py, .js)');
-            }
-        });
+        document.querySelector(".task-container").classList.add("solved");
+      } catch (error) {
+        console.error("Ошибка отправки решения:", error);
+        alert(`Ошибка: ${error.message}`);
+      }
+    }
 
-        // Возврат к списку задач
-        function goBack() {
-            window.location.href = '/profile.html';
-        }
+    document.getElementById("fileUpload").addEventListener("click", () => {
+      document.getElementById("codeFile").click();
+    });
 
-        // Выход
-        function logout() {
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-            window.location.href = '/';
-        }
+    document.getElementById("codeFile").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          document.getElementById("codeInput").value = event.target.result;
+        };
+        reader.readAsText(file);
+      }
+    });
 
-        // Загружаем задачу при открытии страницы
-        loadTask();
-    </script>
+    const fileUpload = document.getElementById("fileUpload");
+    fileUpload.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      fileUpload.style.borderColor = "#7494ec";
+    });
+
+    fileUpload.addEventListener("dragleave", () => {
+      fileUpload.style.borderColor = "#ccc";
+    });
+
+    fileUpload.addEventListener("drop", (e) => {
+      e.preventDefault();
+      fileUpload.style.borderColor = "#ccc";
+
+      const file = e.dataTransfer.files[0];
+      if (file && file.name.match(/\.(cpp|java|py|js)$/i)) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          document.getElementById("codeInput").value = event.target.result;
+        };
+        reader.readAsText(file);
+      } else {
+        alert("Пожалуйста, загрузите файл с кодом (.cpp, .java, .py, .js)");
+      }
+    });
+
+    function goBack() {
+      window.location.href = "/profile.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      window.location.href = "/";
+    }
+
+    loadTask();
+  </script>
 </body>
 </html>

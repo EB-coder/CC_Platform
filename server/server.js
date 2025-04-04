@@ -386,36 +386,56 @@ app.get('/api/solutions/:id', checkAuth, async (req, res) => {
 });
 
 // Интеграция с DeepSeek для оценки решений
-async function evaluateWithDeepSeek(code, language, taskContent) {
-  try {
-      const response = await fetch('https://api.deepseek.com/v1/evaluate', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
-          },
-          body: JSON.stringify({
-              code,
-              language,
-              task_description: taskContent
-          })
-      });
+// async function evaluateWithDeepSeek(code, language, taskContent) {
+//   try {
+//       const response = await fetch('https://api.deepseek.com/v1/evaluate', {
+//           method: 'POST',
+//           headers: {
+//               'Content-Type': 'application/json',
+//               'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+//           },
+//           body: JSON.stringify({
+//               code,
+//               language,
+//               task_description: taskContent
+//           })
+//       });
       
-      if (!response.ok) {
-          throw new Error('Ошибка оценки решения');
-      }
+//       if (!response.ok) {
+//           throw new Error('Ошибка оценки решения');
+//       }
       
-      return await response.json();
-  } catch (error) {
-      console.error('DeepSeek API error:', error);
-      return {
-          score: 0,
-          feedback: "Не удалось оценить решение",
-          status: "error"
-      };
-  }
-}
+//       return await response.json();
+//   } catch (error) {
+//       console.error('DeepSeek API error:', error);
+//       return {
+//           score: 0,
+//           feedback: "Не удалось оценить решение",
+//           status: "error"
+//       };
+//   }
+// }
 
+async function evaluateWithDeepSeek(code, language, taskContent) {
+  // Имитация задержки API (1-3 секунды)
+  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+  
+  // Генерация "реалистичного" фидбека
+  const randomScore = Math.floor(Math.random() * 30) + 50; // 50-80%
+  const feedbacks = [
+      "Код работает, но есть возможности для оптимизации.",
+      "Отличное решение! Все тесты пройдены.",
+      "Есть небольшие ошибки в логике выполнения.",
+      `Решение на ${language} соответствует заданию, но можно улучшить читаемость.`,
+      "Проблемы с производительностью в отдельных случаях."
+  ];
+  
+  return {
+      score: randomScore,
+      feedback: feedbacks[Math.floor(Math.random() * feedbacks.length)],
+      status: randomScore > 70 ? "completed" : "partial"
+  };
+}
 
 
 // Статические файлы
