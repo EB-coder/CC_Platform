@@ -6,6 +6,8 @@ const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs');
+const { OpenAI } = require('openai');
+
 
 const app = express();
 const port = 3000;
@@ -285,7 +287,7 @@ app.post('/api/submissions', async (req, res) => {
       // Асинхронно отправляем на оценку в DeepSeek
       setTimeout(async () => {
           try {
-              const evaluation = await evaluateWithDeepSeek(
+              const evaluation = await evaluateWithGPT(
                   code, 
                   language, 
                   taskCheck.rows[0].content
@@ -416,25 +418,74 @@ app.get('/api/solutions/:id', checkAuth, async (req, res) => {
 //   }
 // }
 
-async function evaluateWithDeepSeek(code, language, taskContent) {
-  // Имитация задержки API (1-3 секунды)
-  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+// async function evaluateWithDeepSeek(code, language, taskContent) {
+//   // Имитация задержки API (1-3 секунды)
+//   await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
   
-  // Генерация "реалистичного" фидбека
-  const randomScore = Math.floor(Math.random() * 30) + 50; // 50-80%
-  const feedbacks = [
-      "Код работает, но есть возможности для оптимизации.",
-      "Отличное решение! Все тесты пройдены.",
-      "Есть небольшие ошибки в логике выполнения.",
-      `Решение на ${language} соответствует заданию, но можно улучшить читаемость.`,
-      "Проблемы с производительностью в отдельных случаях."
-  ];
+//   // Генерация "реалистичного" фидбека
+//   const randomScore = Math.floor(Math.random() * 30) + 50; // 50-80%
+//   const feedbacks = [
+//       "Код работает, но есть возможности для оптимизации.",
+//       "Отличное решение! Все тесты пройдены.",
+//       "Есть небольшие ошибки в логике выполнения.",
+//       `Решение на ${language} соответствует заданию, но можно улучшить читаемость.`,
+//       "Проблемы с производительностью в отдельных случаях."
+//   ];
   
-  return {
-      score: randomScore,
-      feedback: feedbacks[Math.floor(Math.random() * feedbacks.length)],
-      status: randomScore > 70 ? "completed" : "partial"
-  };
+//   return {
+//       score: randomScore,
+//       feedback: feedbacks[Math.floor(Math.random() * feedbacks.length)],
+//       status: randomScore > 70 ? "completed" : "partial"
+//   };
+// }
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+async function evaluateWithGPT(code, language, taskContent) {
+  try {
+    const prompt = `
+    Проанализируй код на ${language} для задачи:
+    "${taskContent}"
+
+    Код:
+    \`\`\`${language}
+    ${code}
+    \`\`\`
+
+    Оцени код по следующим критериям (от 0 до 100%) и дай краткий фидбек:
+
+    1. **Корректность решения** – Насколько правильно решена задача.
+    2. **Оптимальность кода** – Насколько эффективно написан код.
+    3. **Читаемость** – Насколько легко читать и понимать код.
+
+    ⚠️ В конце ответа **обязательно добавь строку строго в формате**:
+    Общая оценка: XX
+    где XX — число от 0 до 100, соответствующее общей оценке за код.
+    `;
+
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.2,
+    });
+
+    const feedback = response.choices[0].message.content;
+    const scoreMatch = feedback.match(/Общая оценка[^0-9]*(\d{1,3})/); // Ищем число в ответе (оценку)
+    const score = scoreMatch ? parseInt(scoreMatch[1]) : 70;
+
+    return {
+      score,
+      feedback,
+      status: score >= 70 ? "completed" : "needs_improvement"
+    };
+
+  } catch (error) {
+    console.error('OpenAI API error:', error);
+    return { score: 0, feedback: "Ошибка оценки", status: "error" };
+  }
 }
 
 
