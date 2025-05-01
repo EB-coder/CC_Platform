@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user || !user.isAdmin) {
-        alert('Доступ запрещен!');
+        alert('Access Denied!');
         window.location.href = '/';
         return;
     }
@@ -19,43 +19,16 @@ async function loadTasks() {
             }
         });
         
-        if (!response.ok) throw new Error('Ошибка загрузки задач');
+        if (!response.ok) throw new Error('Problems loading error');
         
         const tasks = await response.json();
         renderTasks(tasks);
     } catch (error) {
         console.error('Ошибка:', error);
-        alert('Не удалось загрузить задачи');
+        alert('Could not load problems');
     }
 }
 
-// Отображение задач
-// function renderTasks(tasks) {
-//     const container = document.getElementById('tasksContainer');
-//     container.innerHTML = '';
-    
-//     if (tasks.length === 0) {
-//         container.innerHTML = '<p>Нет созданных задач</p>';
-//         return;
-//     }
-    
-//     tasks.forEach(task => {
-//         const taskElement = document.createElement('div');
-//         taskElement.className = 'task-item';
-//         taskElement.innerHTML = `
-//             <div>
-//                 <h3>${task.title}</h3>
-//                 <p>Язык: ${getLanguageName(task.language)}</p>
-//                 <p>${task.content}</p>
-//             </div>
-//             <div class="task-actions">
-//                 <button class="btn edit-btn" onclick="editTask('${task.id}')">Редактировать</button>
-//                 <button class="btn delete-btn" onclick="deleteTask('${task.id}')">Удалить</button>
-//             </div>
-//         `;
-//         container.appendChild(taskElement);
-//     });
-// }
 
 function renderTasks(tasks) {
     const container = document.getElementById('tasksContainer');
@@ -66,7 +39,7 @@ function renderTasks(tasks) {
         taskElement.className = 'task-item';
         taskElement.innerHTML = `
             <div>
-                <h3>${task.title} ${task.is_active ? '' : '(скрыта)'}</h3>
+                <h3>${task.title} ${task.is_active ? '' : '(hidden)'}</h3>
                 <p>Язык: ${getLanguageName(task.language)}</p>
                 <p>${task.content}</p>
             </div>
@@ -74,10 +47,10 @@ function renderTasks(tasks) {
                 <button class="btn visibility-btn" 
                     onclick="toggleTaskVisibility('${task.id}', ${!task.is_active})"
                     style="background: ${task.is_active ? '#2ecc71' : '#e74c3c'}">
-                    ${task.is_active ? 'Скрыть' : 'Показать'}
+                    ${task.is_active ? 'Hide' : 'Unhide'}
                 </button>
-                <button class="btn edit-btn" onclick="editTask('${task.id}')">Редактировать</button>
-                <button class="btn delete-btn" onclick="deleteTask('${task.id}')">Удалить</button>
+                <button class="btn edit-btn" onclick="editTask('${task.id}')">Edit Task</button>
+                <button class="btn delete-btn" onclick="deleteTask('${task.id}')">Delete</button>
             </div>
         `;
         container.appendChild(taskElement);
@@ -85,7 +58,7 @@ function renderTasks(tasks) {
 }
 
 async function toggleTaskVisibility(taskId, isVisible) {
-    if (!confirm(`Вы уверены, что хотите ${isVisible ? 'показать' : 'скрыть'} эту задачу?`)) return;
+    if (!confirm(`Are you shure, you want to ${isVisible ? 'Unhide' : 'Hide'} this task?`)) return;
     
     try {
         const response = await fetch(`/api/tasks/${taskId}/visibility`, {
@@ -103,8 +76,8 @@ async function toggleTaskVisibility(taskId, isVisible) {
         }
         
         const data = await response.json();
-        alert(`Задача успешно ${isVisible ? 'показана' : 'скрыта'}`);
-        loadTasks(); // Перезагружаем список задач
+        alert(`Successfuly ${isVisible ? 'Unhidden' : 'Hidden'}`);
+        loadTasks();
     } catch (error) {
         console.error('Ошибка:', error);
         alert(`Ошибка: ${error.message}`);
@@ -132,7 +105,7 @@ async function submitTask() {
     
 
     if (!title || !content) {
-        alert('Название и условие задачи обязательны!');
+        alert('The title and the task conditions are required.!');
         return;
     }
 
@@ -148,11 +121,11 @@ async function submitTask() {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.error || 'Ошибка сервера');
+            throw new Error(error.error || 'Server Error');
         }
 
         const result = await response.json();
-        alert(taskId ? 'Задача обновлена!' : 'Задача создана!');
+        alert(taskId ? 'Task Updated!' : 'Task Created!');
         resetForm();
         loadTasks();
     } catch (error) {
@@ -160,34 +133,6 @@ async function submitTask() {
         alert('Ошибка: ' + error.message);
     }
 }
-
-// async function editTask(taskId) {
-//     try {
-//         const response = await fetch(`/api/tasks/${taskId}`, {
-//             headers: {
-//                 'Authorization': `Bearer ${localStorage.getItem('token')}`
-//             }
-//         });
-        
-//         if (!response.ok) throw new Error('Ошибка загрузки задачи');
-        
-//         const task = await response.json();
-        
-//         document.getElementById('taskId').value = task.id;
-//         document.getElementById('taskTitle').value = task.title;
-//         document.getElementById('taskContent').value = task.content;
-//         document.getElementById('taskLanguage').value = task.language;
-        
-//         document.getElementById('submitBtn').textContent = 'Обновить задачу';
-//         document.getElementById('cancelBtn').style.display = 'inline-block';
-        
-//     } catch (error) {
-//         console.error('Ошибка:', error);
-//         alert('Не удалось загрузить задачу: ' + error.message);
-//     }
-// }
-
-// Удалить дубликаты и оставить только одну версию каждой функции:
 
 // Редактирование задачи (исправленная версия)
 async function editTask(taskId) {
@@ -200,12 +145,10 @@ async function editTask(taskId) {
         });
 
         if (!response.ok) {
-            // Попробуем получить JSON с ошибкой
             try {
                 const errorData = await response.json();
                 throw new Error(errorData.error || `Ошибка сервера: ${response.status}`);
             } catch (e) {
-                // Если не получилось распарсить JSON
                 throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
             }
         }
@@ -226,19 +169,19 @@ async function editTask(taskId) {
         alert(error.message);
     }
 }
-// Сброс формы (единственная версия)
+// Сброс формы
 function resetForm() {
     document.getElementById('taskId').value = '';
     document.getElementById('taskTitle').value = '';
     document.getElementById('taskContent').value = '';
     document.getElementById('taskLanguage').value = 'cpp';
-    document.getElementById('submitBtn').textContent = 'Создать задачу';
+    document.getElementById('submitBtn').textContent = 'Create Task';
     document.getElementById('cancelBtn').style.display = 'none';
 }
 
 // Удаление задачи
 async function deleteTask(taskId) {
-    if (!confirm('Вы уверены, что хотите удалить эту задачу?')) return;
+    if (!confirm('Are you sure you want to delete this task?')) return;
     
     try {
         const response = await fetch(`/api/tasks/${taskId}`, {
@@ -248,13 +191,13 @@ async function deleteTask(taskId) {
             }
         });
         
-        if (!response.ok) throw new Error('Ошибка удаления задачи');
+        if (!response.ok) throw new Error('Error deleting task');
         
-        alert('Задача удалена!');
+        alert('Task deleted!');
         loadTasks();
     } catch (error) {
         console.error('Ошибка:', error);
-        alert('Не удалось удалить задачу');
+        alert('Failed to delete task');
     }
 }
 

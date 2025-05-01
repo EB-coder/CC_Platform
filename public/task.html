@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Задача Codeforces</title>
+  <title>Task</title>
   <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png" />
@@ -161,23 +161,23 @@
 <body>
   <div class="header">
     <div class="header-title">
-      <button onclick="goBack()" class="back-btn">← Назад</button>
-      <h1 id="taskTitle">Задача</h1>
+      <button onclick="goBack()" class="back-btn">← Back</button>
+      <h1 id="taskTitle">Task</h1>
     </div>
-    <button onclick="logout()">Выйти</button>
+    <button onclick="logout()">Exit</button>
   </div>
 
   <div class="task-container" id="taskContainer">
     <div class="task-meta">
-      <p>Условие задачи</p>
+      <p>Problem conditions</p>
     </div>
     <div class="task-content" id="taskContent"></div>
   </div>
 
   <div class="submit-form">
-    <h2>Отправить решение</h2>
+    <h2>Send solution</h2>
     <div class="form-group">
-      <label for="language">Язык программирования:</label>
+      <label for="language">Programming language:</label>
       <select id="language">
         <option value="cpp">C++</option>
         <option value="java">Java</option>
@@ -187,19 +187,19 @@
     </div>
 
     <div class="form-group">
-      <label>Решение:</label>
+      <label>Solution:</label>
       <div class="file-upload" id="fileUpload">
-        <p>Перетащите файл сюда или кликните для выбора</p>
+        <p>Drag and drop file here or click to select</p>
         <input type="file" id="codeFile" style="display: none;" />
       </div>
-      <p>Или введите код вручную:</p>
+      <p>Or enter the code manually:</p>
       <textarea id="codeInput" placeholder="Введите ваш код здесь..."></textarea>
     </div>
 
-    <button onclick="submitSolution()">Отправить</button>
+    <button onclick="submitSolution()">Send</button>
   </div>
 
-  <a href="/profile.html" class="back-link">← Вернуться к списку задач</a>
+  <a href="/profile.html" class="back-link">← Back to task list</a>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
@@ -219,16 +219,16 @@
 
         if (!taskResponse.ok) {
           const errorData = await taskResponse.json().catch(() => ({}));
-          throw new Error(errorData.error || "Ошибка загрузки задачи");
+          throw new Error(errorData.error || "Error loading task");
         }
 
         const task = await taskResponse.json();
-        document.getElementById("taskTitle").textContent = task.title || "Без названия";
+        document.getElementById("taskTitle").textContent = task.title || "Untitled";
 
         const taskContent = document.getElementById("taskContent");
         taskContent.innerHTML = `
           <div class="full-task-content">
-            ${task.content || "Условие задачи отсутствует"}
+            ${task.content || "The problem statement is missing"}
           </div>
         `;
 
@@ -245,9 +245,9 @@
             document.getElementById("taskContainer").classList.add("solved");
             const bannerHTML = `
               <div class="solved-banner">
-                <p>Вы уже решили эту задачу!</p>
+                <p>You have already solved this problem!</p>
                 <button onclick="window.location.href='/solution-detail.html?id=${isSolved.solution_id}'">
-                  Посмотреть решение
+                  View solution
                 </button>
               </div>
             `;
@@ -255,11 +255,11 @@
           }
         }
       } catch (error) {
-        console.error("Ошибка загрузки задачи:", error);
+        console.error("Error loading task:", error);
         document.getElementById("taskContent").innerHTML = `
           <div class="error">
-            Ошибка загрузки задачи: ${error.message}
-            <p>Попробуйте <a href="/profile.html">вернуться к списку задач</a></p>
+            Error loading task: ${error.message}
+            <p>Попробуйте <a href="/profile.html">← Back to task list</a></p>
           </div>
         `;
       }
@@ -270,7 +270,7 @@
       const code = document.getElementById("codeInput").value;
 
       if (!code.trim()) {
-        alert("Пожалуйста, введите код или загрузите файл");
+        alert("Please enter the code or upload the file");
         return;
       }
 
@@ -290,9 +290,9 @@
         });
 
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Ошибка отправки решения");
+        if (!response.ok) throw new Error(data.error || "Error sending solution");
 
-        alert("Решение отправлено на проверку!");
+        alert("The solution has been sent for review.!");
 
         const solvedTasks = JSON.parse(localStorage.getItem("solvedTasks")) || {};
         solvedTasks[taskId] = true;
@@ -300,7 +300,7 @@
 
         document.querySelector(".task-container").classList.add("solved");
       } catch (error) {
-        console.error("Ошибка отправки решения:", error);
+        console.error("Error sending solution:", error);
         alert(`Ошибка: ${error.message}`);
       }
     }
@@ -342,7 +342,7 @@
         };
         reader.readAsText(file);
       } else {
-        alert("Пожалуйста, загрузите файл с кодом (.cpp, .java, .py, .js)");
+        alert("Please upload the file (.cpp, .java, .py, .js) with the code");
       }
     });
 

@@ -43,7 +43,7 @@ pool.query('SELECT NOW()', (err, res) => {
 function validateEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!re.test(email)) {
-        throw new Error('Некорректный формат email');
+        throw new Error('Incorrect email format');
     }
 }
 
@@ -54,7 +54,7 @@ function checkAdmin(req, res, next) {
   
   if (!token) {
     console.log('❌ Токен не предоставлен');
-    return res.status(401).json({ error: 'Требуется авторизация' });
+    return res.status(401).json({ error: 'Authorization required' });
   }
   
   try {
@@ -63,7 +63,7 @@ function checkAdmin(req, res, next) {
     next();
   } catch (err) {
     console.log('❌ Ошибка токена:', err.message);
-    res.status(401).json({ error: 'Недействительный токен' });
+    res.status(401).json({ error: 'Invalid token' });
   }
 }
 
@@ -74,7 +74,7 @@ function checkAuth(req, res, next) {
   
   if (!token) {
     console.log('❌ Токен не предоставлен');
-    return res.status(401).json({ error: 'Требуется авторизация' });
+    return res.status(401).json({ error: 'Authorization required' });
   }
   
   try {
@@ -83,7 +83,7 @@ function checkAuth(req, res, next) {
     next();
   } catch (err) {
     console.log('❌ Ошибка токена:', err.message);
-    res.status(401).json({ error: 'Недействительный токен' });
+    res.status(401).json({ error: 'Invalid token' });
   }
 }
 
@@ -100,7 +100,7 @@ app.post('/register', async (req, res) => {
         );
         
         if (checkUser.rows.length > 0) {
-            return res.status(400).json({ error: 'Пользователь c таким email уже существует' });
+            return res.status(400).json({ error: 'A user with this email already exists' });
         }
         
         const newUser = await pool.query(
@@ -111,7 +111,7 @@ app.post('/register', async (req, res) => {
         res.json({ success: true, user: newUser.rows[0] });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -127,7 +127,7 @@ app.post('/login', async (req, res) => {
         );
         
         if (user.rows.length === 0) {
-            return res.status(401).json({ error: 'Неверный email или пароль' });
+            return res.status(401).json({ error: 'Incorrect email or password' });
         }
         
         const userData = user.rows[0];
@@ -152,7 +152,7 @@ app.post('/login', async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -168,7 +168,7 @@ app.get('/api/tasks', checkAdmin, async (req, res) => {
         res.json(tasks.rows);
     } catch (err) {
         console.error('Ошибка загрузки задач:', err);
-        res.status(500).json({ error: 'Ошибка загрузки задач' });
+        res.status(500).json({ error: 'Error loading tasks' });
     }
 });
 
@@ -187,7 +187,7 @@ app.post('/api/tasks', checkAdmin, async (req, res) => {
   } catch (err) {
       console.error('Error:', err);
       res.status(500).json({ 
-          error: 'Ошибка создания задачи',
+          error: 'Error creating task',
           details: err.message 
       });
   }
@@ -202,14 +202,14 @@ app.get('/api/tasks/:id', async (req, res) => {
     
     if (result.rows.length === 0) {
       console.log('⚠️ Задача не найдена');
-      return res.status(404).json({ error: 'Задача не найдена' });
+      return res.status(404).json({ error: 'Task not found' });
     }
 
     console.log('✅ Задача найдена:', result.rows[0]);
     res.json(result.rows[0]);
   } catch (err) {
     console.error('❌ Ошибка сервера:', err);
-    res.status(500).json({ error: 'Ошибка базы данных' });
+    res.status(500).json({ error: 'Database Error' });
   }
 });
 // Удаление задачи
@@ -222,13 +222,13 @@ app.delete('/api/tasks/:id', checkAdmin, async (req, res) => {
         );
         
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Задача не найдена' });
+            return res.status(404).json({ error: 'Task not found' });
         }
         
         res.json({ success: true });
     } catch (err) {
         console.error('Ошибка удаления задачи:', err);
-        res.status(500).json({ error: 'Ошибка удаления задачи' });
+        res.status(500).json({ error: 'Error deleting task' });
     }
 });
 
@@ -257,7 +257,7 @@ app.get('/api/active-tasks', async (req, res) => {
       res.json(result.rows);
   } catch (err) {
       console.error('Ошибка при получении задач:', err);
-      res.status(500).json({ error: 'Ошибка сервера' });
+      res.status(500).json({ error: 'Server error' });
   }
 });
 // Отправка решения
@@ -272,7 +272,7 @@ app.post('/api/submissions', async (req, res) => {
       );
       
       if (taskCheck.rows.length === 0) {
-          return res.status(404).json({ error: 'Задача не найдена или неактивна' });
+          return res.status(404).json({ error: 'Task not found or inactive' });
       }
 
       // Сохраняем решение
@@ -301,7 +301,7 @@ app.post('/api/submissions', async (req, res) => {
               );
               
               // Если решение успешное, добавляем в решенные
-              if (evaluation.score >= 70) { // Порог успешности
+              if (evaluation.score >= 70) {
                   await pool.query(
                       `INSERT INTO user_solved_tasks (user_id, task_id, solution_id)
                        VALUES ($1, $2, $3)
@@ -311,7 +311,7 @@ app.post('/api/submissions', async (req, res) => {
                   );
               }
           } catch (e) {
-              console.error('Ошибка оценки решения:', e);
+              console.error('Solution evaluation error:', e);
           }
       }, 0);
 
@@ -321,8 +321,8 @@ app.post('/api/submissions', async (req, res) => {
       });
 
   } catch (err) {
-      console.error('Ошибка при сохранении решения:', err);
-      res.status(500).json({ error: 'Ошибка сервера' });
+      console.error('Error saving solution:', err);
+      res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -338,13 +338,13 @@ app.patch('/api/tasks/:id/visibility', checkAdmin, async (req, res) => {
       );
       
       if (result.rows.length === 0) {
-          return res.status(404).json({ error: 'Задача не найдена' });
+          return res.status(404).json({ error: 'Task not found' });
       }
       
       res.json({ success: true, task: result.rows[0] });
   } catch (err) {
       console.error('Ошибка обновления видимости:', err);
-      res.status(500).json({ error: 'Ошибка сервера' });
+      res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -361,8 +361,8 @@ app.get('/api/user-solutions', checkAuth, async (req, res) => {
       
       res.json(result.rows);
   } catch (err) {
-      console.error('Ошибка загрузки решений:', err);
-      res.status(500).json({ error: 'Ошибка сервера' });
+      console.error('Error loading solutions:', err);
+      res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -382,63 +382,11 @@ app.get('/api/solutions/:id', checkAuth, async (req, res) => {
       
       res.json(result.rows[0]);
   } catch (err) {
-      console.error('Ошибка загрузки решения:', err);
-      res.status(500).json({ error: 'Ошибка сервера' });
+      console.error('Error loading solution:', err);
+      res.status(500).json({ error: 'Server error' });
   }
 });
-
-// Интеграция с DeepSeek для оценки решений
-// async function evaluateWithDeepSeek(code, language, taskContent) {
-//   try {
-//       const response = await fetch('https://api.deepseek.com/v1/evaluate', {
-//           method: 'POST',
-//           headers: {
-//               'Content-Type': 'application/json',
-//               'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
-//           },
-//           body: JSON.stringify({
-//               code,
-//               language,
-//               task_description: taskContent
-//           })
-//       });
-      
-//       if (!response.ok) {
-//           throw new Error('Ошибка оценки решения');
-//       }
-      
-//       return await response.json();
-//   } catch (error) {
-//       console.error('DeepSeek API error:', error);
-//       return {
-//           score: 0,
-//           feedback: "Не удалось оценить решение",
-//           status: "error"
-//       };
-//   }
-// }
-
-// async function evaluateWithDeepSeek(code, language, taskContent) {
-//   // Имитация задержки API (1-3 секунды)
-//   await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-  
-//   // Генерация "реалистичного" фидбека
-//   const randomScore = Math.floor(Math.random() * 30) + 50; // 50-80%
-//   const feedbacks = [
-//       "Код работает, но есть возможности для оптимизации.",
-//       "Отличное решение! Все тесты пройдены.",
-//       "Есть небольшие ошибки в логике выполнения.",
-//       `Решение на ${language} соответствует заданию, но можно улучшить читаемость.`,
-//       "Проблемы с производительностью в отдельных случаях."
-//   ];
-  
-//   return {
-//       score: randomScore,
-//       feedback: feedbacks[Math.floor(Math.random() * feedbacks.length)],
-//       status: randomScore > 70 ? "completed" : "partial"
-//   };
-// }
-
+//ChatGPT integration
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -446,34 +394,34 @@ const openai = new OpenAI({
 async function evaluateWithGPT(code, language, taskContent) {
   try {
     const prompt = `
-    Проанализируй код на ${language} для задачи:
+    Analyze the code on ${language} for the task:
     "${taskContent}"
 
-    Код:
+    Code:
     \`\`\`${language}
     ${code}
     \`\`\`
 
-    Оцени код по следующим критериям (от 0 до 100%) и дай краткий фидбек:
+    Rate the code on the following criteria (from 0 to 100%) and give brief feedback:
 
-    1. **Корректность решения** – Насколько правильно решена задача.
-    2. **Оптимальность кода** – Насколько эффективно написан код.
-    3. **Читаемость** – Насколько легко читать и понимать код.
+    1. **Solution Correctness** – How correctly the problem is solved.
+    2. **Code Optimality** – How efficiently the code is written.
+    3. **Readability** – How easy it is to read and understand the code.
 
-    ⚠️ В конце ответа **обязательно добавь строку строго в формате**:
-    Общая оценка: XX
-    где XX — число от 0 до 100, соответствующее общей оценке за код.
+    ⚠️ At the end of the answer **be sure to add a line strictly in the format**:
+    Overall Grade: XX
+    where XX is a number from 0 to 100 corresponding to the overall rating for the code.
     `;
 
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4.1",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.2,
     });
 
     const feedback = response.choices[0].message.content;
-    const scoreMatch = feedback.match(/Общая оценка[^0-9]*(\d{1,3})/); // Ищем число в ответе (оценку)
+    const scoreMatch = feedback.match(/Overall Grade[^0-9]*(\d{1,3})/);
     const score = scoreMatch ? parseInt(scoreMatch[1]) : 70;
 
     return {
@@ -484,12 +432,12 @@ async function evaluateWithGPT(code, language, taskContent) {
 
   } catch (error) {
     console.error('OpenAI API error:', error);
-    return { score: 0, feedback: "Ошибка оценки", status: "error" };
+    return { score: 0, feedback: "Grading error", status: "error" };
   }
 }
 
 
-// Статические файлы
+
 app.get('/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
@@ -498,7 +446,7 @@ app.get('/profile.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/profile.html'));
 });
 
-// Запуск сервера
+
 app.listen(port, () => {
     console.log(`Сервер запущен на http://localhost:${port}`);
 });

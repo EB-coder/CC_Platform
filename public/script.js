@@ -2,15 +2,6 @@ const container = document.querySelector('.container');
 const registerBtn = document.querySelector('.register-btn');
 const loginBtn = document.querySelector('.login-btn');
 
-// Переключение между формами
-// registerBtn.addEventListener('click', () => {
-//     container.classList.add('active');
-// });
-
-// loginBtn.addEventListener('click', () => {
-//     container.classList.remove('active');
-// });
-
 // Переключение форм + смена фона
 registerBtn.addEventListener('click', () => {
     container.classList.add('active');
@@ -32,12 +23,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     console.log('Начало обработки входа');
     
-    const email = document.querySelector('.login input[type="text"]').value; // Получаем email
+    const email = document.querySelector('.login input[type="text"]').value;
     const password = document.querySelector('.login input[type="password"]').value;
 
-     // Клиентская проверка email
     if (!isValidEmail(email)) {
-      alert('Пожалуйста, введите корректный email');
+      alert('Please, enter correct email');
       return;
     }
 
@@ -49,7 +39,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
                 'Content-Type': 'application/json' 
             },
             body: JSON.stringify({ 
-                username: email, // Отправляем email как username (для совместимости)
+                username: email,
                 password 
             }),
             credentials: 'include'
@@ -59,7 +49,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Ошибка сервера');
+            throw new Error(errorData.error || 'Server error');
         }
 
         const data = await response.json();
@@ -76,11 +66,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
                 window.location.href = '/profile.html';
             }
         } else {
-            alert(data.error || 'Ошибка входа');
+            alert(data.error || 'login error');
         }
     } catch (error) {
         console.error('Ошибка входа:', error);
-        alert(error.message || 'Неверный email или пароль');
+        alert(error.message || 'Incorrect Email or Password');
     }
 });
 
@@ -95,7 +85,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     
     // Проверка email при регистрации
     if (!isValidEmail(email)) {
-      alert('Пожалуйста, введите корректный email');
+      alert('Please, enter correct email');
       return;
     }
     
@@ -111,18 +101,55 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Ошибка сервера');
+            throw new Error(errorData.error || 'Server error');
         }
 
         const data = await response.json();
         console.log('Ответ сервера:', data);
         
         if (data.success) {
-            alert('Регистрация успешна! Теперь войдите.');
+            alert('Registration success! Please log In.');
             container.classList.remove('active');
         }
     } catch (error) {
         console.error('Ошибка регистрации:', error);
-        alert(error.message || 'Пользователь с таким email уже существует');
+        alert(error.message || 'This email olready in use, please use another');
     }
 });
+
+
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const letters = "01";
+const fontSize = 16;
+const columns = canvas.width / fontSize;
+
+const drops = Array.from({ length: columns }, () => 1);
+
+function drawMatrix() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const matrixColor = getComputedStyle(document.body).getPropertyValue('--matrix-color') || "#0F0";
+ctx.fillStyle = matrixColor.trim();
+
+    ctx.font = fontSize + "px monospace";
+
+    drops.forEach((y, i) => {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        const x = i * fontSize;
+        ctx.fillText(text, x, y * fontSize);
+
+        if (y * fontSize > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+        }
+
+        drops[i]++;
+    });
+}
+
+setInterval(drawMatrix, 33);

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Решение задачи</title>
+  <title>Problem Solution</title>
 
   <!-- Prism.js для подсветки -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
@@ -120,25 +120,25 @@
 </head>
 <body>
   <div class="header">
-    <button onclick="window.history.back()" class="back-btn">← Назад</button>
-    <h1 id="solutionTitle">Решение задачи</h1>
+    <button onclick="window.history.back()" class="back-btn">← Back</button>
+    <h1 id="solutionTitle">Problem Solution</h1>
   </div>
 
   <div class="container">
     <div class="task-container">
       <h2 id="taskTitle"></h2>
-      <p>Язык: <span id="solutionLanguage"></span></p>
-      <p>Статус: <span id="solutionStatus"></span></p>
-      <p>Оценка: <span id="solutionScore"></span></p>
-      <p>Отправлено: <span id="solutionDate"></span></p>
+      <p>Language: <span id="solutionLanguage"></span></p>
+      <p>Status: <span id="solutionStatus"></span></p>
+      <p>Grade: <span id="solutionScore"></span></p>
+      <p>Sent: <span id="solutionDate"></span></p>
 
-      <h3>Ваш код:</h3>
+      <h3>Your Code:</h3>
       <div class="code-block">
         <pre><code id="solutionCode" class="language-javascript"></code></pre>
       </div>
 
       <div class="feedback-section" id="feedbackSection">
-        <h3>Фидбек от DeepSeek:</h3>
+        <h3>AI Feetback</h3>
         <p id="solutionFeedback"></p>
       </div>
     </div>
@@ -159,7 +159,7 @@
           }
         });
 
-        if (!response.ok) throw new Error('Не удалось загрузить решение');
+        if (!response.ok) throw new Error('Could not load solution');
 
         const solution = await response.json();
         renderSolution(solution);
@@ -171,11 +171,11 @@
     }
 
     function renderSolution(solution) {
-      document.getElementById('solutionTitle').textContent = `Решение задачи: ${solution.task_title}`;
+      document.getElementById('solutionTitle').textContent = `Problem solution: ${solution.task_title}`;
       document.getElementById('taskTitle').textContent = solution.task_title;
       document.getElementById('solutionLanguage').textContent = getLanguageName(solution.language);
       document.getElementById('solutionStatus').textContent = solution.status;
-      document.getElementById('solutionScore').textContent = solution.score || 'ещё не оценено';
+      document.getElementById('solutionScore').textContent = solution.score || 'Not Graded';
       document.getElementById('solutionDate').textContent = new Date(solution.submitted_at).toLocaleString();
 
       const codeBlock = document.getElementById('solutionCode');

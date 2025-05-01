@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codeforces Tasks</title>
+    <title> Tasks</title>
     <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
@@ -170,21 +170,21 @@
 </head>
 <body>
     <div class="header">
-        <h1>Добро пожаловать, <span id="username"></span>!</h1>
+        <h1>Welcome, dear <span id="username"></span>!</h1>
         <div style="display: flex; gap: 10px;">
-            <button onclick="window.location.href='/solutions.html'">Мои решения</button>
-            <button onclick="logout()">Выйти</button>
+            <button onclick="window.location.href='/solutions.html'">My solutions</button>
+            <button onclick="logout()">Exit</button>
         </div>
     </div>
 
     <div class="stats-container">
         <div class="stat-card">
-            <h3>Решено</h3>
+            <h3>Solved</h3>
             <p id="solvedCount">0</p>
         </div>
         <div class="stat-card">
-            <h3>Активность</h3>
-            <p id="lastActive">Сегодня</p>
+            <h3>Active</h3>
+            <p id="lastActive">Today</p>
         </div>
     </div>
 
@@ -192,18 +192,18 @@
         <div class="control-group">
             <input type="text" id="searchInput" placeholder="Поиск по названию или условию...">
             <select id="languageFilter">
-                <option value="">Все языки</option>
+                <option value="">All languages</option>
                 <option value="cpp">C++</option>
                 <option value="python">Python</option>
                 <option value="java">Java</option>
                 <option value="javascript">JavaScript</option>
             </select>
-            <button onclick="applyFilters()">Применить</button>
-            <button onclick="resetFilters()">Сбросить</button>
+            <button onclick="applyFilters()">Apply</button>
+            <button onclick="resetFilters()">Cancel</button>
         </div>
         
         <div class="control-group">
-            <label for="perPage">Задач на странице:</label>
+            <label for="perPage">Tasks per page:</label>
             <select id="perPage">
                 <option value="5">5</option>
                 <option value="10">10</option>
@@ -214,17 +214,17 @@
     </div>
 
     <div id="tasksContainer">
-        <p>Загрузка задач...</p>
+        <p>Task loading...</p>
     </div>
 
     <div class="pagination">
-        <button id="prevPage" onclick="changePage(-1)">Назад</button>
-        <div class="page-info" id="pageInfo">Страница 1 из 1</div>
-        <button id="nextPage" onclick="changePage(1)">Вперед</button>
+        <button id="prevPage" onclick="changePage(-1)">Previous</button>
+        <div class="page-info" id="pageInfo">Page 1 out of 1</div>
+        <button id="nextPage" onclick="changePage(1)">Next</button>
     </div>
 
     <script>
-        // Глобальные переменные состояния
+       
         const state = {
             allTasks: [],
             filteredTasks: [],
@@ -236,9 +236,8 @@
             }
         };
 
-        // Инициализация при загрузке страницы
+       
         document.addEventListener('DOMContentLoaded', async () => {
-            // Проверка авторизации
             const user = JSON.parse(localStorage.getItem('user'));
             const token = localStorage.getItem('token');
             
@@ -257,7 +256,7 @@
                 await Promise.all([loadUserData(), loadTasks()]);
             } catch (error) {
                 console.error('Ошибка инициализации:', error);
-                showError('Не удалось загрузить данные. Пожалуйста, обновите страницу.');
+                showError('Failed to load data. Please refresh the page.');
             }
         });
 
@@ -303,7 +302,7 @@
                 applyFilters();
             } catch (error) {
                 console.error('Ошибка загрузки задач:', error);
-                showError('Не удалось загрузить задачи. Пожалуйста, попробуйте позже.');
+                showError('Failed to load tasks. Please try again later.');
                 throw error;
             }
         }
@@ -340,7 +339,7 @@
         const container = document.getElementById('tasksContainer');
         
         if (state.filteredTasks.length === 0) {
-            container.innerHTML = '<div class="error">Задачи не найдены. Попробуйте изменить параметры поиска.</div>';
+            container.innerHTML = '<div class="error">No tasks found. Try changing your search parameters.</div>';
             updatePaginationControls();
             return;
         }
@@ -357,17 +356,17 @@
             <div class="task-content">
                 ${truncateText(escapeHtml(task.content), 100)}
             </div>
-            <a href="/task.html?id=${task.id}" class="solve-btn">Решить задачу</a>
+            <a href="/task.html?id=${task.id}" class="solve-btn">Solve this task</a>
         </div>
     `).join('');
         
         updatePaginationControls();
     }
 
-        // Обновление элементов пагинации
+      
         function updatePaginationControls() {
             const totalPages = Math.ceil(state.filteredTasks.length / state.tasksPerPage) || 1;
-            document.getElementById('pageInfo').textContent = `Страница ${state.currentPage} из ${totalPages}`;
+            document.getElementById('pageInfo').textContent = `Page ${state.currentPage} out of ${totalPages}`;
             
             document.getElementById('prevPage').disabled = state.currentPage <= 1;
             document.getElementById('nextPage').disabled = state.currentPage >= totalPages;
@@ -393,7 +392,7 @@
             return solvedTasks[taskId] === true;
         }
 
-        // Вспомогательные функции
+       
         function getLanguageName(code) {
             const languages = {
                 'cpp': 'C++',
@@ -418,7 +417,7 @@
         }
 
         function showLoading() {
-            document.getElementById('tasksContainer').innerHTML = '<p>Загрузка задач...</p>';
+            document.getElementById('tasksContainer').innerHTML = '<p>Tasks loading...</p>';
         }
 
         function showError(message) {

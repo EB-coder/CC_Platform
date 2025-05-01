@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мои решения</title>
+    <title>My Solutions</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -148,12 +148,12 @@
 </head>
 <body>
     <div class="header">
-        <h1>Мои решения</h1>
-        <button onclick="window.location.href='/profile.html'">Назад к задачам</button>
+        <h1>My Solutions</h1>
+        <button onclick="window.location.href='/profile.html'">Back to Problems</button>
     </div>
 
     <div id="solutionsContainer">
-        <p>Загрузка решений...</p>
+        <p>Loading solutions...</p>
     </div>
 
     <script>
@@ -168,7 +168,7 @@
                     }
                 });
                 
-                if (!response.ok) throw new Error('Ошибка загрузки решений');
+                if (!response.ok) throw new Error('Could not load the problem');
                 
                 const solutions = await response.json();
                 renderSolutions(solutions);
@@ -183,7 +183,7 @@
             const container = document.getElementById('solutionsContainer');
             
             if (solutions.length === 0) {
-                container.innerHTML = '<p>У вас пока нет решений</p>';
+                container.innerHTML = '<p>You do not have solutions yet</p>';
                 return;
             }
             
@@ -192,20 +192,20 @@
                     <div class="solution-header">
                         <h3>${solution.task_title}</h3>
                         ${solution.score ? 
-                            `<span class="solution-score">Оценка: ${solution.score}/100</span>` : 
-                            '<span>На проверке...</span>'}
+                            `<span class="solution-score">Grade: ${solution.score}/100</span>` : 
+                            '<span>Checking...</span>'}
                     </div>
-                    <p>Язык: ${getLanguageName(solution.language)}</p>
-                    <p>Отправлено: ${new Date(solution.submitted_at).toLocaleString()}</p>
+                    <p>Language: ${getLanguageName(solution.language)}</p>
+                    <p>Sent: ${new Date(solution.submitted_at).toLocaleString()}</p>
                     
                     ${solution.feedback ? `
                         <div class="solution-feedback">
-                            <h4>Фидбек от DeepSeek:</h4>
+                            <h4>AI Feedback:</h4>
                             <p>${solution.feedback}</p>
                         </div>
                     ` : ''}
                     
-                    <button onclick="viewSolution(${solution.id})">Подробнее</button>
+                    <button onclick="viewSolution(${solution.id})">Details</button>
                 </div>
             `).join('');
         }
