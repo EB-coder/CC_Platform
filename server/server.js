@@ -22,13 +22,21 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Подключение к PostgreSQL
+// const pool = new Pool({
+//     user: 'postgres',
+//     host: 'localhost',
+//     database: 'cf_platform',
+//     password: 'Donthack23_',
+//     port: 5432,
+// });
+
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'cf_platform',
-    password: 'Donthack23_',
-    port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
+
 
 // Проверка подключения
 pool.query('SELECT NOW()', (err, res) => {
