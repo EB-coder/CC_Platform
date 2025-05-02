@@ -22,7 +22,7 @@ const port = process.env.PORT || 3000;
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://https://cf-coding.onrender.com' // Заменить на реальный URL фронта
+  'https://cf-coding.onrender.com' // Заменить на реальный URL фронта
 ];
 
 app.use(cors({
