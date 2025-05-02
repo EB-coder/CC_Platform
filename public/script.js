@@ -93,7 +93,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     
     try {
         console.log('Отправка запроса на регистрацию для email:', email);
-        const response = await fetch('http://localhost:3000/register', {
+        const response = await fetch('${API_BASE}/register', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json' 
