@@ -1,3 +1,5 @@
+const API_BASE = 'https://cf-platform.onrender.com';
+
 // Проверка авторизации админа
 document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -13,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Загрузка всех задач
 async function loadTasks() {
     try {
-        const response = await fetch('/api/tasks', {
+        const response = await fetch('${API_BASE}/api/tasks', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -61,7 +63,7 @@ async function toggleTaskVisibility(taskId, isVisible) {
     if (!confirm(`Are you shure, you want to ${isVisible ? 'Unhide' : 'Hide'} this task?`)) return;
     
     try {
-        const response = await fetch(`/api/tasks/${taskId}/visibility`, {
+        const response = await fetch(`${API_BASE}/api/tasks/${taskId}/visibility`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -110,7 +112,7 @@ async function submitTask() {
     }
 
     try {
-        const response = await fetch(taskId ? `/api/tasks/${taskId}` : '/api/tasks', {
+        const response = await fetch(taskId ? `${API_BASE}/api/tasks/${taskId}` : '/api/tasks', {
             method: taskId ? 'PUT' : 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -184,7 +186,7 @@ async function deleteTask(taskId) {
     if (!confirm('Are you sure you want to delete this task?')) return;
     
     try {
-        const response = await fetch(`/api/tasks/${taskId}`, {
+        const response = await fetch(`${API_BASE}/api/tasks/${taskId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
