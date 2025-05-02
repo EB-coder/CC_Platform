@@ -1,4 +1,4 @@
-const API_BASE = 'https://cf-platform.onrender.com';
+const API_BASE = 'https://cf-coding.onrender.com';
 
 // Проверка авторизации админа
 document.addEventListener('DOMContentLoaded', () => {
