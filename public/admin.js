@@ -138,7 +138,7 @@ async function submitTask() {
 async function editTask(taskId) {
     try {
         console.log(`Запрос задачи для редактирования, ID: ${taskId}`);
-        const response = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
+        const response = await fetch(`${API_BASE}/api/tasks/${taskId}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
