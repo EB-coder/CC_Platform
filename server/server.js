@@ -14,11 +14,27 @@ const port = process.env.PORT || 3000;
 
 
 // Настройки
+// app.use(cors({
+//     origin: 'http://localhost:3000',
+//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//     credentials: true
+// }));
+
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://https://cf-coding.onrender.com' // Заменить на реальный URL фронта
+];
+
 app.use(cors({
-    origin: 'http://localhost:3000',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
 }));
+
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
