@@ -1,7 +1,7 @@
 const container = document.querySelector('.container');
 const registerBtn = document.querySelector('.register-btn');
 const loginBtn = document.querySelector('.login-btn');
-const API_BASE = 'https://https://cf-coding.onrender.com';
+const API_BASE = 'https://cf-coding.onrender.com';
 
 // Переключение форм + смена фона
 registerBtn.addEventListener('click', () => {
@@ -35,7 +35,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     try {
         console.log('Отправка запроса на вход для email:', email);
         // const response = await fetch('http://localhost:3000/login'
-        const response = await fetch('${API_BASE}/login, {
+        const response = await fetch(`${API_BASE}/login`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json' 
@@ -63,9 +63,9 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             localStorage.setItem('token', data.token || '');
 
             if (data.user.isAdmin) {
-                window.location.href = '/admin.html';
+                window.location.href = `${API_BASE}/admin.html`;
             } else {
-                window.location.href = '/profile.html';
+                window.location.href = `${API_BASE}/profile.html`;
             }
         } else {
             alert(data.error || 'login error');
@@ -93,7 +93,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     
     try {
         console.log('Отправка запроса на регистрацию для email:', email);
-        const response = await fetch('${API_BASE}/register', {
+        const response = await fetch(`${API_BASE}/register`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json' 
