@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Загрузка всех задач
 async function loadTasks() {
     try {
-        const response = await fetch('${API_BASE}/api/tasks', {
+        const response = await fetch(`${API_BASE}/api/tasks`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
