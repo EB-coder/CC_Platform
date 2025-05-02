@@ -1,6 +1,7 @@
 const container = document.querySelector('.container');
 const registerBtn = document.querySelector('.register-btn');
 const loginBtn = document.querySelector('.login-btn');
+const API_BASE = 'https://https://cf-coding.onrender.com';
 
 // Переключение форм + смена фона
 registerBtn.addEventListener('click', () => {
@@ -33,7 +34,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
     try {
         console.log('Отправка запроса на вход для email:', email);
-        const response = await fetch('http://localhost:3000/login', {
+        // const response = await fetch('http://localhost:3000/login'
+        const response = await fetch('${API_BASE}/login, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json' 
