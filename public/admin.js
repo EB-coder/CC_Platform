@@ -112,7 +112,7 @@ async function submitTask() {
     }
 
     try {
-        const response = await fetch(taskId ? `${API_BASE}/api/tasks/${taskId}` : '/api/tasks', {
+        const response = await fetch(taskId ? `${API_BASE}/api/tasks/${taskId}` : `${API_BASE}/api/tasks`, {
             method: taskId ? 'PUT' : 'POST',
             headers: {
                 'Content-Type': 'application/json',
