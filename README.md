@@ -1,7 +1,7 @@
 
-#CF_coding is a web-based platform designed to automatically evaluate code submissions for competitive programming problems. It integrates OpenAI's API to provide intelligent feedback on code structure, logic, and efficiency.​
+CF_coding is a web-based platform designed to automatically evaluate code submissions for competitive programming problems. It integrates OpenAI's API to provide intelligent feedback on code structure, logic, and efficiency.​
 
-🚀 ##Features
+🚀 Features<br>
 1.Code Submission Interface: Users can submit their solutions through a user-friendly web interface.<br>
 
 2.Automated Evaluation: Submissions are analyzed using OpenAI's API to assess correctness, efficiency, and coding practices.<br>
@@ -10,7 +10,7 @@
 
 4.Admin Panel: Administrators can manage submissions and monitor evaluations.​<br>
 
-🛠️ ##Technology Stack
+🛠️ Technology Stack<br>
 Frontend: HTML, CSS, JavaScript<br>
 
 Backend: Node.js, Express.js<br>
@@ -19,35 +19,34 @@ AI Integration: OpenAI API<br>
 
 Version Control: Git​<br>
 
-🔧 ##Installation & Setup
-Clone the repository:
+🔧 Installation & Setup<br>
+Clone the repository:<br>
 
-git clone https://github.com/EB-coder/CF_coding.git
-cd CF_coding
-Install dependencies:
+git clone https://github.com/EB-coder/CF_coding.git<br>
+cd CF_coding<br>
+Install dependencies:<br>
 
-npm install
-Configure OpenAI API Key:
+npm install<br>
+Configure OpenAI API Key:<br>
+Create a .env file in the root directory.<br>
 
-Create a .env file in the root directory.
+Add your OpenAI API key:<br>
 
-Add your OpenAI API key:
+OPENAI_API_KEY=your_api_key_here<br>
+Start the server:<br>
+node server/server.js<br>
+Access the application:<br>
 
-OPENAI_API_KEY=your_api_key_here
-Start the server:
-node server/server.js
-Access the application:
-
-Open your browser and navigate to http://localhost:3000​
+Open your browser and navigate to http://localhost:3000​<br>
 
 
-📄 ##Usage
-Submit Code: Enter your solution in the provided text area and submit.
+📄 Usage<br>
+Submit Code: Enter your solution in the provided text area and submit.<br>
 
-Receive Feedback: The system will process your code and display feedback regarding its correctness and efficiency.
+Receive Feedback: The system will process your code and display feedback regarding its correctness and efficiency.<br>
 
-Iterate: Use the feedback to improve your solution and resubmit as needed.​
+Iterate: Use the feedback to improve your solution and resubmit as needed.​<br>
 
-📌 ##Contributing
+📌 Contributing<br>
 Contributions are welcome! Please fork the repository and submit a pull request with your enhancements.​
 
