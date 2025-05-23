@@ -12,17 +12,9 @@ const { OpenAI } = require('openai');
 const app = express();
 const port = process.env.PORT || 3000;
 
-
-// Настройки
-// app.use(cors({
-//     origin: 'http://localhost:3000',
-//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//     credentials: true
-// }));
-
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://cf-coding.onrender.com' // Заменить на реальный URL фронта
+  'https://cf-coding.onrender.com'
 ];
 
 app.use(cors({
@@ -38,33 +30,22 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Подключение к PostgreSQL
-// const pool = new Pool({
-//     user: 'postgres',
-//     host: 'localhost',
-//     database: 'cf_platform',
-//     password: 'Donthack23_',
-//     port: 5432,
-// });
-
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+    user: process.env.DB_USER || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    database: process.env.DB_NAME || 'cf_platform',
+    password: process.env.DB_PASSWORD || 'Donthack23_',
+    port: process.env.DB_PORT || 5432,
 });
 
-
-// Проверка подключения
 pool.query('SELECT NOW()', (err, res) => {
     if (err) {
-        console.error('Ошибка подключения к БД:', err);
+        console.error('Database connection error:', err);
     } else {
-        console.log('✅ PostgreSQL подключён:', res.rows[0].now);
+        console.log('✅ PostgreSQL connected:', res.rows[0].now);
     }
 });
 
-// Функция проверки email
 function validateEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!re.test(email)) {
@@ -73,66 +54,62 @@ function validateEmail(email) {
 }
 
 function checkAdmin(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1] || 
-                req.query.token || 
-                req.cookies.token;
-  
-  if (!token) {
-    console.log('❌ Токен не предоставлен');
-    return res.status(401).json({ error: 'Authorization required' });
-  }
-  
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key');
-    req.user = decoded;
-    next();
-  } catch (err) {
-    console.log('❌ Ошибка токена:', err.message);
-    res.status(401).json({ error: 'Invalid token' });
-  }
+    const token = req.headers.authorization?.split(' ')[1] ||
+                  req.query.token ||
+                  req.cookies.token;
+
+    if (!token) {
+        return res.status(401).json({ error: 'Authorization required' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key');
+        req.user = decoded;
+        next();
+    } catch (err) {
+        res.status(401).json({ error: 'Invalid token' });
+    }
 }
 
 function checkAuth(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1] || 
-                req.query.token || 
-                req.cookies.token;
-  
-  if (!token) {
-    console.log('❌ Токен не предоставлен');
-    return res.status(401).json({ error: 'Authorization required' });
-  }
-  
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key');
-    req.user = decoded;
-    next();
-  } catch (err) {
-    console.log('❌ Ошибка токена:', err.message);
-    res.status(401).json({ error: 'Invalid token' });
-  }
+    const token = req.headers.authorization?.split(' ')[1] ||
+                  req.query.token ||
+                  req.cookies.token;
+
+    if (!token) {
+        return res.status(401).json({ error: 'Authorization required' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_secret_key');
+        req.user = decoded;
+        next();
+    } catch (err) {
+        res.status(401).json({ error: 'Invalid token' });
+    }
 }
 
 
 // Регистрация
 app.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
-    
+
     try {
         validateEmail(email);
         const checkUser = await pool.query(
             'SELECT * FROM users WHERE email = $1',
             [email]
         );
-        
+
         if (checkUser.rows.length > 0) {
             return res.status(400).json({ error: 'A user with this email already exists' });
         }
-        
+
         const newUser = await pool.query(
             'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
             [username, email, password]
         );
-        
+
         res.json({ success: true, user: newUser.rows[0] });
     } catch (err) {
         console.error(err);
@@ -143,18 +120,18 @@ app.post('/register', async (req, res) => {
 // Вход
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    
+
     try {
         validateEmail(username);
         const user = await pool.query(
             'SELECT id, username, email, is_admin FROM users WHERE email = $1 AND password = $2',
             [username, password]
         );
-        
+
         if (user.rows.length === 0) {
             return res.status(401).json({ error: 'Incorrect email or password' });
         }
-        
+
         const userData = user.rows[0];
         const token = jwt.sign(
             {
@@ -164,7 +141,7 @@ app.post('/login', async (req, res) => {
             process.env.JWT_SECRET || 'your_secret_key',
             { expiresIn: '1h' }
         );
-        
+
         res.json({
             success: true,
             token,
@@ -185,7 +162,7 @@ app.post('/login', async (req, res) => {
 app.get('/api/tasks', checkAdmin, async (req, res) => {
     try {
         const tasks = await pool.query(`
-            SELECT t.*, u.username as admin_name 
+            SELECT t.*, u.username as admin_name
             FROM tasks t
             JOIN users u ON t.admin_id = u.id
             ORDER BY t.created_at DESC
@@ -200,42 +177,74 @@ app.get('/api/tasks', checkAdmin, async (req, res) => {
 // Создание задачи
 app.post('/api/tasks', checkAdmin, async (req, res) => {
   try {
-      const { title, content, language } = req.body;
-      
+      const { title, content, language, difficulty } = req.body;
+
       const result = await pool.query(
-          `INSERT INTO tasks (title, content, language, admin_id)
-           VALUES ($1, $2, $3, $4) RETURNING *`,
-          [title, content, language, req.user.id]
+          `INSERT INTO tasks (title, content, language, difficulty, admin_id)
+           VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+          [title, content, language, difficulty || 'medium', req.user.id]
       );
 
       res.status(201).json(result.rows[0]);
   } catch (err) {
       console.error('Error:', err);
-      res.status(500).json({ 
+      res.status(500).json({
           error: 'Error creating task',
-          details: err.message 
+          details: err.message
       });
   }
 });
 
 app.get('/api/tasks/:id', async (req, res) => {
-  try {
-    const id = parseInt(req.params.id); // Явное преобразование в число
-    console.log('🛠️ Запрос задачи с ID:', id, '(Тип:', typeof id + ')');
+    try {
+        const { id } = req.params;
 
-    const result = await pool.query('SELECT * FROM tasks WHERE id = $1', [id]);
-    
-    if (result.rows.length === 0) {
-      console.log('⚠️ Задача не найдена');
-      return res.status(404).json({ error: 'Task not found' });
+        if (!id) {
+            return res.status(400).json({ error: 'Task ID is required' });
+        }
+
+        const result = await pool.query('SELECT * FROM tasks WHERE id = $1', [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({ error: 'Database Error', details: err.message });
     }
+});
 
-    console.log('✅ Задача найдена:', result.rows[0]);
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error('❌ Ошибка сервера:', err);
-    res.status(500).json({ error: 'Database Error' });
-  }
+app.put('/api/tasks/:id', checkAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, content, language, difficulty } = req.body;
+
+        if (!id) {
+            return res.status(400).json({ error: 'Task ID is required' });
+        }
+
+        if (!title || !content) {
+            return res.status(400).json({ error: 'Title and content are required' });
+        }
+
+        const result = await pool.query(
+            `UPDATE tasks
+             SET title = $1, content = $2, language = $3, difficulty = $4
+             WHERE id = $5 RETURNING *`,
+            [title, content, language, difficulty || 'medium', id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Task not found' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error updating task:', err);
+        res.status(500).json({ error: 'Error updating task', details: err.message });
+    }
 });
 // Удаление задачи
 app.delete('/api/tasks/:id', checkAdmin, async (req, res) => {
@@ -245,11 +254,11 @@ app.delete('/api/tasks/:id', checkAdmin, async (req, res) => {
             'DELETE FROM tasks WHERE id = $1 RETURNING *',
             [id]
         );
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Task not found' });
         }
-        
+
         res.json({ success: true });
     } catch (err) {
         console.error('Ошибка удаления задачи:', err);
@@ -257,27 +266,66 @@ app.delete('/api/tasks/:id', checkAdmin, async (req, res) => {
     }
 });
 
+// Получить всех пользователей (только для админов)
+app.get('/api/users', checkAdmin, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, username, email, created_at, is_admin FROM users ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+app.put('/api/users/:id', checkAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { username, password } = req.body;
+
+        const userExists = await pool.query('SELECT id FROM users WHERE id = $1', [id]);
+        if (userExists.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        let query, params;
+
+        if (password && password.trim() !== '') {
+            query = `UPDATE users SET username = $1, password = $2 WHERE id = $3 RETURNING id, username, email, created_at, is_admin`;
+            params = [username, password, id];
+        } else {
+            query = `UPDATE users SET username = $1 WHERE id = $2 RETURNING id, username, email, created_at, is_admin`;
+            params = [username, id];
+        }
+
+        const result = await pool.query(query, params);
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ error: 'Failed to update user' });
+    }
+});
+
 // Получение всех активных задач (для пользователей)
 app.get('/api/active-tasks', async (req, res) => {
   try {
       const { search, language } = req.query;
-      let query = `SELECT id, title, content, language 
+      let query = `SELECT id, title, content, language, difficulty
                    FROM tasks WHERE is_active = true`;
-      
+
       const params = [];
-      
+
       if (search) {
           query += ` AND (title ILIKE $${params.length + 1} OR content ILIKE $${params.length + 1})`;
           params.push(`%${search}%`);
       }
-      
+
       if (language) {
           query += ` AND language = $${params.length + 1}`;
           params.push(language);
       }
-      
+
       query += ' ORDER BY created_at DESC';
-      
+
       const result = await pool.query(query, params);
       res.json(result.rows);
   } catch (err) {
@@ -289,22 +337,22 @@ app.get('/api/active-tasks', async (req, res) => {
 app.post('/api/submissions', async (req, res) => {
   try {
       const { task_id, language, code, user_id } = req.body;
-      
+
       // Проверяем существование задачи
       const taskCheck = await pool.query(
           'SELECT id, content FROM tasks WHERE id = $1 AND is_active = true',
           [task_id]
       );
-      
+
       if (taskCheck.rows.length === 0) {
           return res.status(404).json({ error: 'Task not found or inactive' });
       }
 
       // Сохраняем решение
       const solutionResult = await pool.query(
-          `INSERT INTO solutions 
-           (task_id, user_id, language, code, status) 
-           VALUES ($1, $2, $3, $4, 'pending') 
+          `INSERT INTO solutions
+           (task_id, user_id, language, code, status)
+           VALUES ($1, $2, $3, $4, 'pending')
            RETURNING *`,
           [task_id, user_id, language, code]
       );
@@ -313,18 +361,18 @@ app.post('/api/submissions', async (req, res) => {
       setTimeout(async () => {
           try {
               const evaluation = await evaluateWithGPT(
-                  code, 
-                  language, 
+                  code,
+                  language,
                   taskCheck.rows[0].content
               );
-              
+
               await pool.query(
-                  `UPDATE solutions SET 
+                  `UPDATE solutions SET
                    status = $1, score = $2, feedback = $3, evaluated_at = NOW()
                    WHERE id = $4`,
                   [evaluation.status, evaluation.score, evaluation.feedback, solutionResult.rows[0].id]
               );
-              
+
               // Если решение успешное, добавляем в решенные
               if (evaluation.score >= 70) {
                   await pool.query(
@@ -340,7 +388,7 @@ app.post('/api/submissions', async (req, res) => {
           }
       }, 0);
 
-      res.json({ 
+      res.json({
           success: true,
           solution: solutionResult.rows[0]
       });
@@ -356,16 +404,16 @@ app.patch('/api/tasks/:id/visibility', checkAdmin, async (req, res) => {
   try {
       const { id } = req.params;
       const { is_active } = req.body;
-      
+
       const result = await pool.query(
           'UPDATE tasks SET is_active = $1 WHERE id = $2 RETURNING *',
           [is_active, id]
       );
-      
+
       if (result.rows.length === 0) {
           return res.status(404).json({ error: 'Task not found' });
       }
-      
+
       res.json({ success: true, task: result.rows[0] });
   } catch (err) {
       console.error('Ошибка обновления видимости:', err);
@@ -383,7 +431,7 @@ app.get('/api/user-solutions', checkAuth, async (req, res) => {
           WHERE s.user_id = $1
           ORDER BY s.submitted_at DESC
       `, [req.user.id]);
-      
+
       res.json(result.rows);
   } catch (err) {
       console.error('Error loading solutions:', err);
@@ -400,14 +448,70 @@ app.get('/api/solutions/:id', checkAuth, async (req, res) => {
           JOIN tasks t ON s.task_id = t.id
           WHERE s.id = $1 AND s.user_id = $2
       `, [req.params.id, req.user.id]);
-      
+
       if (result.rows.length === 0) {
-          return res.status(404).json({ error: 'Решение не найдено' });
+          return res.status(404).json({ error: 'Solution not found' });
       }
-      
+
       res.json(result.rows[0]);
   } catch (err) {
       console.error('Error loading solution:', err);
+      res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get user statistics
+app.get('/api/user-stats', checkAuth, async (req, res) => {
+  try {
+      // Get count of solved tasks
+      const solvedResult = await pool.query(`
+          SELECT COUNT(*) as solved
+          FROM user_solved_tasks
+          WHERE user_id = $1
+      `, [req.user.id]);
+
+      // Get last active date from solutions
+      const lastActiveResult = await pool.query(`
+          SELECT MAX(submitted_at) as last_active
+          FROM solutions
+          WHERE user_id = $1
+      `, [req.user.id]);
+
+      res.json({
+          solved: parseInt(solvedResult.rows[0].solved) || 0,
+          lastActive: lastActiveResult.rows[0].last_active || new Date()
+      });
+  } catch (err) {
+      console.error('Error loading user stats:', err);
+      res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Check if a task is solved by the user
+app.get('/api/check-solved', checkAuth, async (req, res) => {
+  try {
+      const { task_id } = req.query;
+
+      if (!task_id) {
+          return res.status(400).json({ error: 'Task ID is required' });
+      }
+
+      const result = await pool.query(`
+          SELECT solution_id
+          FROM user_solved_tasks
+          WHERE user_id = $1 AND task_id = $2
+      `, [req.user.id, task_id]);
+
+      if (result.rows.length === 0) {
+          return res.json({ solved: false });
+      }
+
+      res.json({
+          solved: true,
+          solution_id: result.rows[0].solution_id
+      });
+  } catch (err) {
+      console.error('Error checking solved status:', err);
       res.status(500).json({ error: 'Server error' });
   }
 });
@@ -463,11 +567,11 @@ async function evaluateWithGPT(code, language, taskContent) {
 
 
 
-app.get('/admin.html', (req, res) => {
+app.get('/admin.html', (_, res) => {
     res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
 
-app.get('/profile.html', (req, res) => {
+app.get('/profile.html', (_, res) => {
     res.sendFile(path.join(__dirname, '../public/profile.html'));
 });
 

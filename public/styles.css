@@ -1,12 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
-
 :root {
     --matrix-color: #0F0;
 }
 
 body.register-bg {
-    --matrix-color: #00f7ff; 
+    --matrix-color: #00f7ff;
 }
 
 * {
@@ -22,7 +21,6 @@ body {
     align-items: center;
     min-height: 100vh;
     background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
-    /* background: url('/images/bg-log.jpg') no-repeat center center/cover; */
     transition: background-image 0.8s ease-in-out;
 }
 
@@ -62,7 +60,6 @@ body.register-bg {
 
 .form-box.register {
     visibility: hidden;
-
 }
 
 .container.active .form-box.register {
@@ -82,6 +79,7 @@ form{
     position: relative;
     margin: 30px 0;
 }
+
 .input-box input {
     width: 100%;
     padding: 13px 50px 13px 20px;
@@ -92,14 +90,13 @@ form{
     font-size: 16px;
     color: #333;
     font-weight: 500;
-
 }
 
 .input-box input::placeholder {
     color:#888;
     font-weight: 400;
-    
 }
+
 .input-box i {
     position: absolute;
     right: 20px;
@@ -118,10 +115,10 @@ form{
     color: #333;
     text-decoration: none;
 }
+
 .btn {
     width: 100%;
     height: 48px;
-    /* background: #7494ec; */
     background: black;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, .1);
@@ -130,8 +127,8 @@ form{
     font-size: 16px;
     color: #fff;
     font-weight: 600;
-    
 }
+
 .container p {
     font-size: 14.5px;
     margin: 15px 0;
@@ -157,7 +154,6 @@ form{
     position: absolute;
     width: 100%;
     height: 100%;
-    
 }
 
 .toggle-box::before{
@@ -166,7 +162,6 @@ form{
     left: -250%;
     width: 300%;
     height: 100%;
-    /* background: #7494ec; */
     background: black;
     border-radius: 150px;
     z-index: 2;
@@ -176,6 +171,7 @@ form{
 .container.active .toggle-box::before {
     left: 50%;
 }
+
 .toggle-panel {
     position: absolute;
     width: 50%;
@@ -208,9 +204,11 @@ form{
     right: 0;
     transition-delay: 1.2s;
 }
+
 .toggle-panel p {
     margin-bottom: 20px;
 }
+
 .toggle-panel .btn{
     width: 160px;
     height: 46px;
@@ -219,7 +217,7 @@ form{
     box-shadow: none;
 }
 
-@media screen and (max-width: 650px ) {
+@media screen and (max-width: 650px) {
     .container {
         height: calc(100vh - 40px);
     }
@@ -229,10 +227,12 @@ form{
         height: 70%;
         bottom: 0;
     }
+
     .container.active .form-box {
         right: 0;
         bottom: 30%;
     }
+
     .toggle-box::before{
         left: 0;
         width: 100%;
@@ -240,15 +240,17 @@ form{
         top: -270%;
         border-radius: 20vw;
     }
+
     .container.active .toggle-box::before {
         top: 70%;
         left: 0;
     }
-    
+
     .toggle-panel {
         width: 100%;
         height: 30%;
     }
+
     .toggle-panel.toggle-left{
         top: 0;
     }
@@ -257,26 +259,25 @@ form{
         left: 0;
         top: -30%;
     }
+
     .toggle-panel.toggle-right{
         right: 0;
         bottom: -30%;
     }
+
     .container.active .toggle-panel.toggle-right {
         bottom: 0;
     }
-
-    
 }
 
 @media screen and (max-width: 400px) {
     .form-box{
         padding: 20px;
-
     }
+
     .toggle-panel h1{
         font-size: 30px;
     }
-    
 }
 
 #matrix {

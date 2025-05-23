@@ -3,9 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Problem Solution</title>
+  <title>CF Platform - Solution Details</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  <link rel="manifest" href="images/site.webmanifest">
+  <meta name="theme-color" content="#7494ec">
 
-  <!-- Prism.js для подсветки -->
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Prism.js for code highlighting -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js" defer></script>
@@ -14,202 +23,763 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js" defer></script>
 
   <style>
+    :root {
+        --primary-color: #4361ee;
+        --primary-light: #4895ef;
+        --primary-dark: #3f37c9;
+        --secondary-color: #4cc9f0;
+        --success-color: #4CAF50;
+        --warning-color: #ff9800;
+        --danger-color: #f44336;
+        --light-color: #f8f9fa;
+        --dark-color: #212529;
+        --gray-color: #6c757d;
+        --border-radius: 8px;
+        --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
     body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f4f5;
-      color: #333;
-    }
-
-    .header {
-      background: #4f46e5;
-      color: white;
-      padding: 20px 30px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .header h1 {
-      margin: 0;
-      font-size: 1.6rem;
-    }
-
-    .back-btn {
-      background: white;
-      color: #4f46e5;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .back-btn:hover {
-      background: #e0e7ff;
+        font-family: 'Poppins', sans-serif;
+        background: #f5f7fb;
+        color: #333;
+        line-height: 1.6;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
     }
 
     .container {
-      max-width: 1200px;
-      margin: 20px auto;
-      padding: 0 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        width: 100%;
     }
 
-    .task-container {
-      background: white;
-      padding: 30px;
-      border-radius: 14px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    /* Navbar */
+    .navbar {
+        background-color: white;
+        box-shadow: var(--box-shadow);
+        padding: 15px 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
     }
 
-    .task-container h2 {
-      margin-top: 0;
-      color: #1f2937;
+    .navbar-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
-    .task-container p {
-      margin: 8px 0;
-      line-height: 1.6;
+    .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .nav-link {
+        color: var(--dark-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .nav-link:hover {
+        color: var(--primary-color);
+    }
+
+    .nav-link.active {
+        color: var(--primary-color);
+    }
+
+    .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
+    }
+
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background-color: var(--primary-light);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        padding: 30px 0;
+    }
+
+    .page-header {
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 5px;
+    }
+
+    .page-subtitle {
+        color: var(--gray-color);
+        font-size: 1rem;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: var(--border-radius);
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-dark);
+    }
+
+    .btn-outline {
+        background-color: transparent;
+        border: 1px solid var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .btn-outline:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    /* Solution Details */
+    .solution-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+
+    .solution-header {
+        padding: 20px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .solution-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 20px;
+        background-color: #f9f9f9;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .meta-label {
+        font-size: 0.9rem;
+        color: var(--gray-color);
+        margin-bottom: 5px;
+    }
+
+    .meta-value {
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .score-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .score-high {
+        background-color: rgba(76, 175, 80, 0.1);
+        color: var(--success-color);
+    }
+
+    .score-medium {
+        background-color: rgba(255, 152, 0, 0.1);
+        color: var(--warning-color);
+    }
+
+    .score-low {
+        background-color: rgba(244, 67, 54, 0.1);
+        color: var(--danger-color);
+    }
+
+    .solution-body {
+        padding: 20px;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--dark-color);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .code-container {
+        background: #2d2d2d;
+        border-radius: var(--border-radius);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .code-header {
+        background: #1e1e1e;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+    }
+
+    .code-language {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .copy-btn {
+        background: transparent;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: var(--transition);
+    }
+
+    .copy-btn:hover {
+        color: var(--primary-light);
     }
 
     .code-block {
-      background: #2d2d2d;
-      border-radius: 10px;
-      padding: 20px;
-      margin-top: 10px;
-      overflow-x: auto;
+        padding: 15px;
+        overflow-x: auto;
+        max-height: 500px;
+    }
+
+    .code-block pre {
+        margin: 0;
     }
 
     .code-block code {
-      font-size: 0.9rem;
+        font-family: 'Fira Code', monospace;
+        font-size: 0.9rem;
     }
 
-    .feedback-section {
-      margin-top: 30px;
-      background: #f0fdfa;
-      border: 1px solid #a7f3d0;
-      padding: 20px;
-      border-radius: 12px;
-      color: #065f46;
+    .feedback-container {
+        background-color: rgba(76, 175, 80, 0.05);
+        border-left: 4px solid var(--success-color);
+        padding: 20px;
+        border-radius: 4px;
     }
 
-    .feedback-section h3 {
-      margin-top: 0;
+    .feedback-content {
+        white-space: pre-line;
+        line-height: 1.6;
     }
 
-    .error {
-      color: red;
-      background: #ffe5e5;
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-    }
-
-    @media (max-width: 768px) {
-      .header {
+    /* Loading and Error States */
+    .loading-container {
+        display: flex;
         flex-direction: column;
-        align-items: flex-start;
-      }
+        align-items: center;
+        justify-content: center;
+        padding: 50px 0;
+        text-align: center;
+    }
 
-      .container {
-        padding: 0 10px;
-      }
+    .loading-spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: var(--primary-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .error-container {
+        background-color: #fdecea;
+        border-left: 5px solid var(--danger-color);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        margin: 20px 0;
+        color: #d32f2f;
+    }
+
+    /* Footer */
+    .footer {
+        background-color: white;
+        padding: 30px 0;
+        margin-top: auto;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .footer-logo {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .footer-links {
+        display: flex;
+        gap: 20px;
+    }
+
+    .footer-link {
+        color: var(--gray-color);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .footer-link:hover {
+        color: var(--primary-color);
+    }
+
+    .footer-copyright {
+        color: var(--gray-color);
+        font-size: 0.9rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .navbar-container {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .solution-meta {
+            grid-template-columns: 1fr;
+        }
+
+        .footer-content {
+            flex-direction: column;
+            text-align: center;
+        }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <button onclick="window.history.back()" class="back-btn">← Back</button>
-    <h1 id="solutionTitle">Problem Solution</h1>
-  </div>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container navbar-container">
+        <a href="/profile.html" class="logo">
+            <i class="fas fa-code"></i> CF Platform
+        </a>
+        <div class="nav-links">
+            <a href="/profile.html" class="nav-link">
+                <i class="fas fa-tasks"></i> Tasks
+            </a>
+            <a href="/solutions.html" class="nav-link active">
+                <i class="fas fa-code"></i> My Solutions
+            </a>
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <span id="username">User</span>
+            </div>
+            <button class="btn btn-primary" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+  </nav>
 
-  <div class="container">
-    <div class="task-container">
-      <h2 id="taskTitle"></h2>
-      <p>Language: <span id="solutionLanguage"></span></p>
-      <p>Status: <span id="solutionStatus"></span></p>
-      <p>Grade: <span id="solutionScore"></span></p>
-      <p>Sent: <span id="solutionDate"></span></p>
-
-      <h3>Your Code:</h3>
-      <div class="code-block">
-        <pre><code id="solutionCode" class="language-javascript"></code></pre>
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" id="solutionTitle">Solution Details</h1>
+          <p class="page-subtitle" id="taskTitle">Loading solution...</p>
+        </div>
+        <button class="btn btn-outline" onclick="window.location.href='/solutions.html'">
+          <i class="fas fa-arrow-left"></i> Back to Solutions
+        </button>
       </div>
 
-      <div class="feedback-section" id="feedbackSection">
-        <h3>AI Feetback</h3>
-        <p id="solutionFeedback"></p>
+      <div id="solutionContainer" class="solution-container">
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Loading solution details...</p>
+        </div>
       </div>
     </div>
-  </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+        <div class="footer-logo">
+            <i class="fas fa-code"></i> CF Platform
+        </div>
+        <div class="footer-links">
+            <a href="javascript:void(0);" onclick="showAbout()" class="footer-link">About</a>
+            <a href="javascript:void(0);" onclick="showContact()" class="footer-link">Contact</a>
+            <a href="javascript:void(0);" onclick="showPrivacyPolicy()" class="footer-link">Privacy Policy</a>
+        </div>
+        <div class="footer-copyright">
+            &copy; 2023 CF Platform. All rights reserved.
+        </div>
+    </div>
+  </footer>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const solutionId = urlParams.get('id');
-    const user = JSON.parse(localStorage.getItem('user'));
 
-    if (!user) window.location.href = '/';
+    if (!solutionId) {
+      window.location.href = '/solutions.html';
+    }
 
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check authentication
+      const user = JSON.parse(localStorage.getItem('user'));
+      const token = localStorage.getItem('token');
+
+      if (!user || !token) {
+        window.location.href = '/';
+        return;
+      }
+
+      // Set user name in the navbar
+      document.getElementById('username').textContent = user.username || user.email;
+
+      // Load solution details
+      await loadSolution();
+    });
+
+    // Load solution from the server
     async function loadSolution() {
       try {
+        showLoadingState();
+
         const response = await fetch(`/api/solutions/${solutionId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
 
-        if (!response.ok) throw new Error('Could not load solution');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Error: ${response.status}`);
+        }
 
         const solution = await response.json();
         renderSolution(solution);
       } catch (error) {
-        document.querySelector('.task-container').innerHTML = `
-          <div class="error">Ошибка загрузки решения: ${error.message}</div>
-        `;
+        console.error('Error loading solution:', error);
+        showErrorState(error.message || 'Failed to load solution');
       }
     }
 
+    // Render solution details to the UI
     function renderSolution(solution) {
-      document.getElementById('solutionTitle').textContent = `Problem solution: ${solution.task_title}`;
+      // Update page title and subtitle
+      document.getElementById('solutionTitle').textContent = `Solution for ${solution.task_title}`;
       document.getElementById('taskTitle').textContent = solution.task_title;
-      document.getElementById('solutionLanguage').textContent = getLanguageName(solution.language);
-      document.getElementById('solutionStatus').textContent = solution.status;
-      document.getElementById('solutionScore').textContent = solution.score || 'Not Graded';
-      document.getElementById('solutionDate').textContent = new Date(solution.submitted_at).toLocaleString();
 
-      const codeBlock = document.getElementById('solutionCode');
-      codeBlock.textContent = solution.code;
-      codeBlock.className = 'language-' + getPrismLang(solution.language);
+      // Determine score class based on the score value
+      let scoreClass = 'score-medium';
+      let scoreIcon = 'fa-star-half-alt';
 
-      Prism.highlightElement(codeBlock);
-
-      if (solution.feedback) {
-        document.getElementById('solutionFeedback').textContent = solution.feedback;
-      } else {
-        document.getElementById('feedbackSection').style.display = 'none';
+      if (solution.score >= 80) {
+          scoreClass = 'score-high';
+          scoreIcon = 'fa-star';
+      } else if (solution.score < 60) {
+          scoreClass = 'score-low';
+          scoreIcon = 'fa-exclamation-circle';
       }
+
+      // Format date
+      const submittedDate = new Date(solution.submitted_at);
+      const formattedDate = submittedDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+      });
+
+      // Build solution container HTML
+      const solutionContainer = document.getElementById('solutionContainer');
+      solutionContainer.innerHTML = `
+        <div class="solution-header">
+          <h2>${escapeHtml(solution.task_title)}</h2>
+        </div>
+
+        <div class="solution-meta">
+          <div class="meta-item">
+            <div class="meta-label">Language</div>
+            <div class="meta-value">
+              <i class="fas fa-code"></i> ${getLanguageName(solution.language)}
+            </div>
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">Status</div>
+            <div class="meta-value">
+              <i class="fas fa-check-circle"></i> ${getStatusText(solution.status)}
+            </div>
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">Score</div>
+            <div class="meta-value">
+              ${solution.score ? `
+                <div class="score-badge ${scoreClass}">
+                  <i class="fas ${scoreIcon}"></i> ${solution.score}/100
+                </div>
+              ` : `
+                <div class="score-badge">
+                  <i class="fas fa-spinner fa-spin"></i> Evaluating...
+                </div>
+              `}
+            </div>
+          </div>
+
+          <div class="meta-item">
+            <div class="meta-label">Submitted</div>
+            <div class="meta-value">
+              <i class="fas fa-calendar-alt"></i> ${formattedDate}
+            </div>
+          </div>
+        </div>
+
+        <div class="solution-body">
+          <h3 class="section-title">
+            <i class="fas fa-code"></i> Your Solution
+          </h3>
+
+          <div class="code-container">
+            <div class="code-header">
+              <div class="code-language">
+                <i class="fas ${getLanguageIcon(solution.language)}"></i> ${getLanguageName(solution.language)}
+              </div>
+              <button class="copy-btn" onclick="copyCode()">
+                <i class="fas fa-copy"></i> Copy
+              </button>
+            </div>
+            <div class="code-block">
+              <pre><code id="solutionCode" class="language-${getLanguageClass(solution.language)}">${escapeHtml(solution.code)}</code></pre>
+            </div>
+          </div>
+
+          ${solution.feedback ? `
+            <h3 class="section-title">
+              <i class="fas fa-robot"></i> AI Feedback
+            </h3>
+            <div class="feedback-container">
+              <div class="feedback-content">${escapeHtml(solution.feedback)}</div>
+            </div>
+          ` : ''}
+
+          <h3 class="section-title">
+            <i class="fas fa-tasks"></i> Task Description
+          </h3>
+          <div class="task-description">
+            ${escapeHtml(solution.task_content)}
+          </div>
+        </div>
+      `;
+
+      // Trigger Prism to highlight the code
+      Prism.highlightAll();
     }
 
+    // Copy code to clipboard
+    function copyCode() {
+      const codeElement = document.getElementById('solutionCode');
+      const textToCopy = codeElement.textContent;
+
+      navigator.clipboard.writeText(textToCopy)
+        .then(() => {
+          const copyBtn = document.querySelector('.copy-btn');
+          copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+
+          setTimeout(() => {
+            copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
+          }, 2000);
+        })
+        .catch(err => {
+          console.error('Failed to copy: ', err);
+          alert('Failed to copy code to clipboard');
+        });
+    }
+
+    // Get human-readable language name
     function getLanguageName(code) {
       const languages = {
-        'cpp': 'C++', 'python': 'Python',
-        'java': 'Java', 'javascript': 'JavaScript'
+        'cpp': 'C++',
+        'python': 'Python',
+        'java': 'Java',
+        'javascript': 'JavaScript'
       };
       return languages[code] || code;
     }
 
-    function getPrismLang(code) {
-      const map = {
+    // Get language class for Prism.js
+    function getLanguageClass(code) {
+      const classes = {
         'cpp': 'cpp',
         'python': 'python',
         'java': 'java',
         'javascript': 'javascript'
       };
-      return map[code] || 'javascript';
+      return classes[code] || 'javascript';
     }
 
-    loadSolution();
+    // Get language icon
+    function getLanguageIcon(code) {
+      const icons = {
+        'cpp': 'fa-file-code',
+        'python': 'fa-python',
+        'java': 'fa-java',
+        'javascript': 'fa-js'
+      };
+      return icons[code] || 'fa-code';
+    }
+
+    // Get human-readable status text
+    function getStatusText(status) {
+      const statusMap = {
+        'pending': 'Pending',
+        'completed': 'Completed',
+        'needs_improvement': 'Needs Improvement',
+        'error': 'Error'
+      };
+      return statusMap[status] || status || 'Submitted';
+    }
+
+    // Show loading state
+    function showLoadingState() {
+      document.getElementById('solutionContainer').innerHTML = `
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Loading solution details...</p>
+        </div>
+      `;
+    }
+
+    // Show error state
+    function showErrorState(message) {
+      document.getElementById('solutionContainer').innerHTML = `
+        <div class="error-container">
+          <h3><i class="fas fa-exclamation-triangle"></i> Error</h3>
+          <p>${message}</p>
+          <button class="btn btn-primary" onclick="loadSolution()" style="margin-top: 15px;">
+            <i class="fas fa-sync"></i> Try Again
+          </button>
+        </div>
+      `;
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Footer information functions
+    function showAbout() {
+      alert('CF Platform is a coding challenge platform designed to help developers improve their programming skills through practice problems and challenges.');
+    }
+
+    function showContact() {
+      alert('For any questions or support, please contact us at support@cfplatform.com');
+    }
+
+    function showPrivacyPolicy() {
+      alert('CF Platform respects your privacy. We do not share your personal information with third parties without your consent.');
+    }
+
+    // Logout function
+    function logout() {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('solvedTasks');
+      window.location.href = '/';
+    }
   </script>
 </body>
 </html>
