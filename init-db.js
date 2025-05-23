@@ -2,14 +2,13 @@ require('dotenv').config();
 const { Pool } = require('pg');
 
 // Database configuration - use DATABASE_URL for production
+// Отключаем SSL проверку для DigitalOcean
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const pool = new Pool(
     process.env.DATABASE_URL ? {
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? {
-            rejectUnauthorized: false,
-            ca: false,
-            checkServerIdentity: false
-        } : false
+        ssl: false
     } : {
         user: process.env.DB_USER || 'postgres',
         host: process.env.DB_HOST || 'localhost',
