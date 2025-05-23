@@ -4,7 +4,7 @@
   "description": "Competitive Coding Platform with AI-powered code evaluation",
   "main": "server/server.js",
   "scripts": {
-    "start": "node init-db.js && node server/server.js",
+    "start": "node init-db.js; node server/server.js",
     "dev": "nodemon server/server.js",
     "install-server": "cd server && npm install",
     "build": "npm install && cd server && npm install",

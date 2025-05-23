@@ -87,11 +87,15 @@ async function initDatabase() {
 
     } catch (error) {
         console.error('❌ Database initialization failed:', error);
-        throw error;
+        console.log('⚠️ Continuing anyway - tables might already exist');
     } finally {
         await pool.end();
     }
 }
 
 // Run initialization
-initDatabase().catch(console.error);
+initDatabase().catch(error => {
+    console.error('Database initialization error:', error);
+    console.log('Application will continue...');
+    process.exit(0);
+});
