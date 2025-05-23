@@ -4,10 +4,10 @@
   "description": "Competitive Coding Platform with AI-powered code evaluation",
   "main": "server/server.js",
   "scripts": {
-    "start": "node init-db.js; node server/server.js",
+    "start": "node init-db.js && node server/server.js",
     "dev": "nodemon server/server.js",
     "install-server": "cd server && npm install",
-    "build": "npm install && cd server && npm install",
+    "build": "npm install",
     "init-db": "node init-db.js"
   },
   "keywords": [
@@ -35,7 +35,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "openai": "^4.20.1",
-    "body-parser": "^1.20.2"
+    "body-parser": "^1.20.2",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
