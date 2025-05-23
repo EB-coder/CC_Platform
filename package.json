@@ -1,0 +1,41 @@
+{
+  "name": "cc-platform",
+  "version": "1.0.0",
+  "description": "Competitive Coding Platform with AI-powered code evaluation",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
+    "install-server": "cd server && npm install"
+  },
+  "keywords": [
+    "competitive-programming",
+    "coding-platform",
+    "nodejs",
+    "express",
+    "postgresql",
+    "openai"
+  ],
+  "author": "EB-coder",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EB-coder/CC_Platform.git"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.3",
+    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "openai": "^4.20.1",
+    "body-parser": "^1.20.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

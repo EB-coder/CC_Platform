@@ -14,15 +14,26 @@ const port = process.env.PORT || 3000;
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://cf-coding.onrender.com'
+  'https://cf-coding.onrender.com',
+  process.env.FRONTEND_URL || 'http://localhost:3000'
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    return callback(new Error('Not allowed by CORS'));
+
+    // In production, be more strict
+    if (process.env.NODE_ENV === 'production') {
+      return callback(new Error('Not allowed by CORS'));
+    }
+
+    // In development, allow all origins
+    return callback(null, true);
   },
   credentials: true
 }));
@@ -30,13 +41,19 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'cf_platform',
-    password: process.env.DB_PASSWORD || 'Donthack23_',
-    port: process.env.DB_PORT || 5432,
-});
+// Database configuration - use DATABASE_URL for production
+const pool = new Pool(
+    process.env.DATABASE_URL ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    } : {
+        user: process.env.DB_USER || 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        database: process.env.DB_NAME || 'cf_platform',
+        password: process.env.DB_PASSWORD || 'Donthack23_',
+        port: process.env.DB_PORT || 5432,
+    }
+);
 
 pool.query('SELECT NOW()', (err, res) => {
     if (err) {
