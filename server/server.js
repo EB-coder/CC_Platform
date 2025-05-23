@@ -10,7 +10,7 @@ const { OpenAI } = require('openai');
 
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080;
 
 const allowedOrigins = [
   'http://localhost:3000',
@@ -596,7 +596,9 @@ app.get('/profile.html', (_, res) => {
 });
 
 
-app.listen(port, () => {
-    console.log(`Сервер запущен на http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`🚀 Сервер запущен на порту ${port}`);
+    console.log(`🌐 NODE_ENV: ${process.env.NODE_ENV}`);
+    console.log(`📊 DATABASE_URL: ${process.env.DATABASE_URL ? 'настроен' : 'не настроен'}`);
 });
 
