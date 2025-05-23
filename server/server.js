@@ -12,39 +12,61 @@ const { OpenAI } = require('openai');
 const app = express();
 const port = process.env.PORT || 8080;
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://cf-coding.onrender.com',
-  'https://cc-platform-znif4.ondigitalocean.app',
-  process.env.FRONTEND_URL || 'http://localhost:3000'
-];
+console.log('🔍 Environment PORT:', process.env.PORT);
+console.log('🔍 Using port:', port);
+console.log('🔍 NODE_ENV:', process.env.NODE_ENV);
 
+// Simplified CORS for production
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    // In production, be more strict
-    if (process.env.NODE_ENV === 'production') {
-      return callback(new Error('Not allowed by CORS'));
-    }
-
-    // In development, allow all origins
-    return callback(null, true);
-  },
+  origin: true,
   credentials: true
 }));
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Health check route
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        port: port,
+        env: process.env.NODE_ENV || 'development'
+    });
+});
+
 // Serve index.html for root route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
+    const indexPath = path.join(__dirname, '../public/index.html');
+    console.log('📄 Serving index.html from:', indexPath);
+    console.log('📂 File exists:', require('fs').existsSync(indexPath));
+
+    if (!require('fs').existsSync(indexPath)) {
+        return res.status(404).send('index.html not found');
+    }
+
+    res.sendFile(indexPath);
+});
+
+// Serve other HTML files
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/admin.html'));
+});
+
+app.get('/profile.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/profile.html'));
+});
+
+app.get('/task.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/task.html'));
+});
+
+app.get('/solutions.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/solutions.html'));
+});
+
+app.get('/solution-detail.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/solution-detail.html'));
 });
 
 // Database configuration - use DATABASE_URL for production
@@ -593,18 +615,9 @@ async function evaluateWithGPT(code, language, taskContent) {
 
 
 
-app.get('/admin.html', (_, res) => {
-    res.sendFile(path.join(__dirname, '../public/admin.html'));
-});
-
-app.get('/profile.html', (_, res) => {
-    res.sendFile(path.join(__dirname, '../public/profile.html'));
-});
-
-
 app.listen(port, '0.0.0.0', () => {
-    console.log(`🚀 Сервер запущен на порту ${port}`);
-    console.log(`🌐 NODE_ENV: ${process.env.NODE_ENV}`);
-    console.log(`📊 DATABASE_URL: ${process.env.DATABASE_URL ? 'настроен' : 'не настроен'}`);
+    console.log(`🚀 Server listening on http://0.0.0.0:${port}`);
+    console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log('🔍 Available routes: /, /health, /api/*');
 });
 
