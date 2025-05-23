@@ -5,7 +5,9 @@ const { Pool } = require('pg');
 const pool = new Pool(
     process.env.DATABASE_URL ? {
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+        ssl: {
+            rejectUnauthorized: false
+        }
     } : {
         user: process.env.DB_USER || 'postgres',
         host: process.env.DB_HOST || 'localhost',
@@ -66,7 +68,7 @@ async function initDatabase() {
 
         // Create default admin user
         await pool.query(`
-            INSERT INTO users (username, email, password, is_admin) 
+            INSERT INTO users (username, email, password, is_admin)
             VALUES ('admin', 'admin@cfplatform.com', 'admin123', TRUE)
             ON CONFLICT (email) DO NOTHING
         `);
@@ -81,7 +83,7 @@ async function initDatabase() {
         console.log('✅ Indexes created');
 
         console.log('🎉 Database initialization completed successfully!');
-        
+
     } catch (error) {
         console.error('❌ Database initialization failed:', error);
         throw error;
