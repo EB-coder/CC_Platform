@@ -1,52 +1,89 @@
+# CC_Platform
 
-CF_coding is a web-based platform designed to automatically evaluate code submissions for competitive programming problems. It integrates OpenAI's API to provide intelligent feedback on code structure, logic, and efficiency.​
+CC_Platform is a comprehensive web-based competitive coding platform designed to automatically evaluate code submissions for programming problems. It integrates OpenAI's API to provide intelligent feedback on code structure, logic, and efficiency.
 
-🚀 Features<br>
-1.Code Submission Interface: Users can submit their solutions through a user-friendly web interface.<br>
+## 🚀 Features
 
-2.Automated Evaluation: Submissions are analyzed using OpenAI's API to assess correctness, efficiency, and coding practices.<br>
+- **User Authentication**: Secure login and registration system with admin privileges
+- **Task Management**: Create, edit, and manage coding challenges with difficulty levels
+- **Code Submission Interface**: Users can submit their solutions through a user-friendly web interface
+- **Automated Evaluation**: Submissions are analyzed using OpenAI's API to assess correctness, efficiency, and coding practices
+- **Feedback Reports**: Detailed feedback is provided to help users improve their solutions
+- **Admin Panel**: Comprehensive admin dashboard to manage tasks, users, and submissions
+- **User Management**: Admin can view and edit user accounts and credentials
+- **Profile System**: User profiles with task completion tracking and difficulty filtering
+- **Solution Viewing**: Browse and view submitted solutions with detailed feedback
+- **Responsive Design**: Modern, minimalistic UI that works on all devices
 
-3.Feedback Reports: Detailed feedback is provided to help users improve their solutions.<br>
+## 🛠️ Technology Stack
 
-4.Admin Panel: Administrators can manage submissions and monitor evaluations.​<br>
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: Node.js, Express.js
+- **Database**: PostgreSQL
+- **AI Integration**: OpenAI API
+- **Authentication**: JWT tokens
+- **Version Control**: Git
 
-🛠️ Technology Stack<br>
-Frontend: HTML, CSS, JavaScript<br>
+## 🔧 Installation & Setup
 
-Backend: Node.js, Express.js<br>
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/EB-coder/CC_Platform.git
+   cd CC_Platform
+   ```
 
-AI Integration: OpenAI API<br>
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-Version Control: Git​<br>
+3. **Configure Environment Variables:**
+   Create a `.env` file in the server directory and add:
+   ```env
+   OPENAI_API_KEY=your_api_key_here
+   DB_USER=postgres
+   DB_HOST=localhost
+   DB_NAME=cf_platform
+   DB_PASSWORD=your_password
+   DB_PORT=5432
+   JWT_SECRET=your_secret_key
+   ```
 
-🔧 Installation & Setup<br>
-Clone the repository:<br>
+4. **Set up PostgreSQL Database:**
+   - Install PostgreSQL
+   - Create a database named `cf_platform`
+   - Run the database schema setup
 
-git clone https://github.com/EB-coder/CF_coding.git<br>
-cd CF_coding<br>
-Install dependencies:<br>
+5. **Start the server:**
+   ```bash
+   cd server
+   node server.js
+   ```
 
-npm install<br>
-Configure OpenAI API Key:<br>
-Create a .env file in the root directory.<br>
+6. **Access the application:**
+   Open your browser and navigate to `http://localhost:3000`
 
-Add your OpenAI API key:<br>
+## 📄 Usage
 
-OPENAI_API_KEY=your_api_key_here<br>
-Start the server:<br>
-node server/server.js<br>
-Access the application:<br>
+- **Register/Login**: Create an account or sign in to access the platform
+- **Browse Tasks**: View available coding challenges with different difficulty levels
+- **Submit Solutions**: Write and submit your code solutions
+- **Receive Feedback**: Get AI-powered feedback on your submissions
+- **Track Progress**: Monitor your completed tasks and performance
+- **Admin Features**: Manage tasks, users, and platform content (admin only)
 
-Open your browser and navigate to http://localhost:3000​<br>
+## 🎨 Design Features
 
+- **Matrix Animation**: Dynamic background with falling binary code
+- **Minimalistic UI**: Clean, professional interface design
+- **Responsive Layout**: Optimized for desktop and mobile devices
+- **Dark/Light Themes**: Adaptive color schemes
+- **Smooth Animations**: Fluid transitions and interactions
 
-📄 Usage<br>
-Submit Code: Enter your solution in the provided text area and submit.<br>
+## 📌 Contributing
 
-Receive Feedback: The system will process your code and display feedback regarding its correctness and efficiency.<br>
+Contributions are welcome! Please fork the repository and submit a pull request with your enhancements.
 
-Iterate: Use the feedback to improve your solution and resubmit as needed.​<br>
+## 📝 License
 
-📌 Contributing<br>
-Contributions are welcome! Please fork the repository and submit a pull request with your enhancements.​
-
+This project is open source and available under the [MIT License](LICENSE).
