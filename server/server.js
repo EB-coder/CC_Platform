@@ -15,6 +15,7 @@ const port = process.env.PORT || 3000;
 const allowedOrigins = [
   'http://localhost:3000',
   'https://cf-coding.onrender.com',
+  'https://cc-platform-znif4.ondigitalocean.app',
   process.env.FRONTEND_URL || 'http://localhost:3000'
 ];
 

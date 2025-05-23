@@ -7,7 +7,8 @@
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
     "install-server": "cd server && npm install",
-    "build": "cd server && npm install"
+    "build": "cd server && npm install && node init-db.js",
+    "init-db": "node init-db.js"
   },
   "keywords": [
     "competitive-programming",
