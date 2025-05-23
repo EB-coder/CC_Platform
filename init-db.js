@@ -5,9 +5,9 @@ const { Pool } = require('pg');
 const pool = new Pool(
     process.env.DATABASE_URL ? {
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? {
+        ssl: {
             rejectUnauthorized: false
-        } : false
+        }
     } : {
         user: process.env.DB_USER || 'postgres',
         host: process.env.DB_HOST || 'localhost',
