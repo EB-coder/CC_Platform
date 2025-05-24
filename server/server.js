@@ -47,9 +47,17 @@ const pool = new Pool({
     user: process.env.DB_USER || 'postgres',
     host: process.env.DB_HOST || 'localhost',
     database: process.env.DB_NAME || 'cf_platform',
-    password: process.env.DB_PASSWORD || 'Donthack23_',
+    password: process.env.DB_PASSWORD || 'local_password',
     port: process.env.DB_PORT || 5432,
     ssl: false
+});
+
+console.log('Database config:', {
+    user: process.env.DB_USER || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    database: process.env.DB_NAME || 'cf_platform',
+    port: process.env.DB_PORT || 5432,
+    password_set: !!process.env.DB_PASSWORD
 });
 
 pool.query('SELECT NOW()', (err, res) => {
