@@ -43,21 +43,12 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Database configuration - use DATABASE_URL for production
-const pool = new Pool(
-    process.env.DATABASE_URL ? {
-        connectionString: process.env.DATABASE_URL,
-        ssl: {
-            rejectUnauthorized: false,
-            require: true
-        }
-    } : {
-        user: process.env.DB_USER || 'postgres',
-        host: process.env.DB_HOST || 'localhost',
-        database: process.env.DB_NAME || 'cf_platform',
-        password: process.env.DB_PASSWORD || 'Donthack23_',
-        port: process.env.DB_PORT || 5432,
-    }
-);
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL || `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASSWORD || 'Donthack23_'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || 5432}/${process.env.DB_NAME || 'cf_platform'}`,
+    ssl: process.env.DATABASE_URL ? {
+        rejectUnauthorized: false
+    } : false
+});
 
 pool.query('SELECT NOW()', (err, res) => {
     if (err) {
