@@ -217,75 +217,15 @@ form{
     box-shadow: none;
 }
 
-/* Tablet styles */
-@media screen and (max-width: 1024px) {
-    .container {
-        width: 90%;
-        margin: 20px auto;
-    }
-}
-
-/* Mobile styles */
-@media screen and (max-width: 768px) {
-    .container {
-        width: 95%;
-        height: auto;
-        min-height: calc(100vh - 40px);
-        flex-direction: column;
-        border-radius: 20px;
-    }
-
-    .form-box {
-        width: 100%;
-        height: auto;
-        position: relative;
-        right: auto;
-        padding: 30px 20px;
-    }
-
-    .container.active .form-box {
-        right: auto;
-    }
-
-    .toggle-box {
-        display: none;
-    }
-
-    .toggle-panel {
-        display: none;
-    }
-
-    .container h1 {
-        font-size: 28px;
-        margin-bottom: 20px;
-    }
-
-    .input-box {
-        margin: 20px 0;
-    }
-
-    .social-icons {
-        margin-top: 15px;
-    }
-
-    .social-icons a {
-        margin: 0 5px;
-        padding: 8px;
-        font-size: 20px;
-    }
-}
-
 @media screen and (max-width: 650px) {
     .container {
         height: calc(100vh - 40px);
-        border-radius: 15px;
     }
 
     .form-box {
         width: 100%;
         height: 70%;
         bottom: 0;
-        padding: 25px 15px;
     }
 
     .container.active .form-box {
@@ -309,7 +249,6 @@ form{
     .toggle-panel {
         width: 100%;
         height: 30%;
-        display: flex;
     }
 
     .toggle-panel.toggle-left{
@@ -328,10 +267,6 @@ form{
 
     .container.active .toggle-panel.toggle-right {
         bottom: 0;
-    }
-
-    .container h1 {
-        font-size: 24px;
     }
 }
 
