@@ -1,0 +1,7 @@
+id,username,email,password,is_admin,created_at
+2,dava,bekmurza@mail.ru,test1234,f,2025-03-30 03:58:24.029095
+4,David,David@mail.ru,test123,f,2025-04-04 01:58:54.885508
+3,Islam,islam@mail.ru,test,f,2025-03-30 04:32:44.852935
+1,elmir,bekmurzaev@mail.ru,test123,t,2025-03-30 01:59:50.108409
+5,Alymbek,alym@mail.ru,test123,f,2025-05-23 20:35:00.846139
+6,admin,admin@admin.com,admin123,t,2025-05-24 05:38:02.28222

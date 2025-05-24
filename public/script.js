@@ -1,7 +1,7 @@
 const container = document.querySelector('.container');
 const registerBtn = document.querySelector('.register-btn');
 const loginBtn = document.querySelector('.login-btn');
-const API_BASE = 'http://localhost:3000';
+const API_BASE = window.location.origin;
 
 registerBtn.addEventListener('click', () => {
     container.classList.add('active');
