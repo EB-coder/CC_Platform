@@ -15,6 +15,7 @@ const port = process.env.PORT || 3000;
 const allowedOrigins = [
   'http://localhost:3000',
   'https://cf-coding.onrender.com',
+  'https://cc-platform-algnu.ondigitalocean.app',
   process.env.FRONTEND_URL || 'http://localhost:3000'
 ];
 
@@ -45,7 +46,10 @@ app.use(express.static(path.join(__dirname, '../public')));
 const pool = new Pool(
     process.env.DATABASE_URL ? {
         connectionString: process.env.DATABASE_URL,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+        ssl: {
+            rejectUnauthorized: false,
+            require: true
+        }
     } : {
         user: process.env.DB_USER || 'postgres',
         host: process.env.DB_HOST || 'localhost',
@@ -60,6 +64,109 @@ pool.query('SELECT NOW()', (err, res) => {
         console.error('Database connection error:', err);
     } else {
         console.log('✅ PostgreSQL connected:', res.rows[0].now);
+    }
+});
+
+// Database initialization endpoint
+app.post('/api/init-database', async (req, res) => {
+    try {
+        // Create users table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(255) NOT NULL,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                is_admin BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+
+        // Create tasks table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS tasks (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                content TEXT NOT NULL,
+                language VARCHAR(50) NOT NULL,
+                difficulty VARCHAR(20) DEFAULT 'medium',
+                admin_id INTEGER NOT NULL REFERENCES users(id),
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+
+        // Create solutions table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS solutions (
+                id SERIAL PRIMARY KEY,
+                task_id INTEGER REFERENCES tasks(id),
+                user_id INTEGER REFERENCES users(id),
+                code TEXT NOT NULL,
+                language VARCHAR(20) NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending',
+                score INTEGER,
+                feedback TEXT,
+                submitted_at TIMESTAMP DEFAULT NOW(),
+                evaluated_at TIMESTAMP
+            )
+        `);
+
+        // Create user_solved_tasks table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS user_solved_tasks (
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                task_id INTEGER NOT NULL REFERENCES tasks(id),
+                solution_id INTEGER REFERENCES solutions(id),
+                solved_at TIMESTAMP DEFAULT NOW(),
+                PRIMARY KEY (user_id, task_id)
+            )
+        `);
+
+        // Create indexes
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_tasks_admin_id ON tasks(admin_id);
+            CREATE INDEX IF NOT EXISTS idx_tasks_is_active ON tasks(is_active);
+            CREATE INDEX IF NOT EXISTS idx_solutions_task_id ON solutions(task_id);
+            CREATE INDEX IF NOT EXISTS idx_solutions_user_id ON solutions(user_id);
+            CREATE INDEX IF NOT EXISTS idx_user_solved_tasks_user_id ON user_solved_tasks(user_id);
+            CREATE INDEX IF NOT EXISTS idx_user_solved_tasks_task_id ON user_solved_tasks(task_id);
+        `);
+
+        // Insert sample data
+        await pool.query(`
+            INSERT INTO users (id, username, email, password, is_admin, created_at) VALUES
+            (1, 'elmir', 'bekmurzaev@mail.ru', 'test123', true, '2025-03-30 01:59:50.108409'),
+            (2, 'dava', 'bekmurza@mail.ru', 'test1234', false, '2025-03-30 03:58:24.029095'),
+            (3, 'Islam', 'islam@mail.ru', 'test', false, '2025-03-30 04:32:44.852935'),
+            (4, 'David', 'David@mail.ru', 'test123', false, '2025-04-04 01:58:54.885508'),
+            (5, 'Alymbek', 'alym@mail.ru', 'test123', false, '2025-05-23 20:35:00.846139'),
+            (6, 'admin', 'admin@admin.com', 'admin123', true, '2025-05-24 05:38:02.28222')
+            ON CONFLICT (email) DO NOTHING
+        `);
+
+        await pool.query(`
+            INSERT INTO tasks (id, title, content, language, difficulty, admin_id, is_active, created_at) VALUES
+            (6, 'hello world', 'print ''hello wordl''', 'python', 'medium', 1, true, '2025-04-03 01:07:44.400465'),
+            (12, 'pentagon', 'print "pentagon"', 'java', 'medium', 1, true, '2025-04-03 23:17:07.608163'),
+            (13, 'Fibonachi', 'This is the fibonachi related task !fhklsd', 'java', 'medium', 1, false, '2025-04-04 01:45:00.746277'),
+            (16, 'Additional', 'nothing now', 'python', 'medium', 1, false, '2025-04-15 17:45:03.255572'),
+            (18, 'hello world test', 'print hello world in python', 'python', 'medium', 1, false, '2025-04-16 04:10:10.377787'),
+            (21, 'Level_test', 'just the level testing', 'python', 'easy', 1, true, '2025-05-23 01:24:25.149283')
+            ON CONFLICT (id) DO NOTHING
+        `);
+
+        // Update sequences
+        await pool.query(`
+            SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
+            SELECT setval('tasks_id_seq', (SELECT MAX(id) FROM tasks));
+        `);
+
+        res.json({ success: true, message: 'Database initialized successfully' });
+    } catch (err) {
+        console.error('Database initialization error:', err);
+        res.status(500).json({ error: 'Database initialization failed', details: err.message });
     }
 });
 
