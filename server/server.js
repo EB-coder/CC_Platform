@@ -49,7 +49,9 @@ const pool = new Pool({
     database: process.env.DB_NAME || 'cf_platform',
     password: process.env.DB_PASSWORD || 'local_password',
     port: process.env.DB_PORT || 5432,
-    ssl: false
+    ssl: process.env.DB_HOST && process.env.DB_HOST.includes('ondigitalocean.com') ? {
+        rejectUnauthorized: false
+    } : false
 });
 
 console.log('Database config:', {
@@ -57,7 +59,8 @@ console.log('Database config:', {
     host: process.env.DB_HOST || 'localhost',
     database: process.env.DB_NAME || 'cf_platform',
     port: process.env.DB_PORT || 5432,
-    password_set: !!process.env.DB_PASSWORD
+    password_set: !!process.env.DB_PASSWORD,
+    ssl_enabled: !!(process.env.DB_HOST && process.env.DB_HOST.includes('ondigitalocean.com'))
 });
 
 pool.query('SELECT NOW()', (err, res) => {
