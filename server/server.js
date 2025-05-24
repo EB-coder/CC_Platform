@@ -42,31 +42,15 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Database configuration - use DATABASE_URL for production
-let dbConfig;
-
-if (process.env.DATABASE_URL) {
-    // Production configuration for DigitalOcean
-    dbConfig = {
-        connectionString: process.env.DATABASE_URL,
-        ssl: {
-            rejectUnauthorized: false,
-            require: true
-        }
-    };
-} else {
-    // Local development configuration
-    dbConfig = {
-        user: process.env.DB_USER || 'postgres',
-        host: process.env.DB_HOST || 'localhost',
-        database: process.env.DB_NAME || 'cf_platform',
-        password: process.env.DB_PASSWORD || 'Donthack23_',
-        port: process.env.DB_PORT || 5432,
-        ssl: false
-    };
-}
-
-const pool = new Pool(dbConfig);
+// Database configuration
+const pool = new Pool({
+    user: process.env.DB_USER || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    database: process.env.DB_NAME || 'cf_platform',
+    password: process.env.DB_PASSWORD || 'Donthack23_',
+    port: process.env.DB_PORT || 5432,
+    ssl: false
+});
 
 pool.query('SELECT NOW()', (err, res) => {
     if (err) {
