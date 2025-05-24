@@ -431,26 +431,222 @@
         font-size: 0.9rem;
     }
 
+    /* Mobile Menu */
+    .mobile-menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--dark-color);
+        cursor: pointer;
+        padding: 5px;
+    }
+
     /* Responsive */
+    @media (max-width: 1024px) {
+        .container {
+            padding: 0 15px;
+        }
+
+        .task-content {
+            padding: 15px;
+        }
+
+        .form-textarea {
+            min-height: 150px;
+        }
+    }
+
     @media (max-width: 768px) {
         .navbar-container {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mobile-menu-toggle {
+            display: block;
+        }
+
+        .nav-links {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: var(--box-shadow);
             flex-direction: column;
+            padding: 20px;
             gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-links.mobile-open {
+            display: flex;
         }
 
         .page-header {
             flex-direction: column;
             align-items: flex-start;
+            gap: 10px;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .task-header {
+            padding: 15px;
+        }
+
+        .task-title {
+            font-size: 1.3rem;
+        }
+
+        .task-body {
+            padding: 15px;
+        }
+
+        .task-content {
+            padding: 15px;
+            font-size: 0.9rem;
+        }
+
+        .solution-form-header {
+            padding: 15px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .solution-form-body {
+            padding: 15px;
+        }
+
+        .solution-form-footer {
+            padding: 15px;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .solved-banner {
             flex-direction: column;
             align-items: flex-start;
+            padding: 12px;
+        }
+
+        .file-upload {
+            padding: 20px;
         }
 
         .footer-content {
             flex-direction: column;
             text-align: center;
+            gap: 15px;
+        }
+
+        .footer-links {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .container {
+            padding: 0 10px;
+        }
+
+        .main-content {
+            padding: 20px 0;
+        }
+
+        .navbar {
+            padding: 10px 0;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+        }
+
+        .nav-link {
+            font-size: 0.9rem;
+        }
+
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            font-size: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.3rem;
+        }
+
+        .task-header {
+            padding: 12px;
+        }
+
+        .task-title {
+            font-size: 1.2rem;
+        }
+
+        .task-meta {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .task-body {
+            padding: 12px;
+        }
+
+        .task-content {
+            padding: 12px;
+            font-size: 0.85rem;
+        }
+
+        .solution-form-header {
+            padding: 12px;
+        }
+
+        .solution-form-title {
+            font-size: 1.1rem;
+        }
+
+        .solution-form-body {
+            padding: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-select,
+        .form-textarea {
+            padding: 10px 12px;
+            font-size: 0.9rem;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+        }
+
+        .file-upload {
+            padding: 15px;
+        }
+
+        .file-upload i {
+            font-size: 1.5rem;
+        }
+
+        .solution-form-footer {
+            padding: 12px;
         }
     }
   </style>
@@ -462,7 +658,10 @@
         <a href="/profile.html" class="logo">
             <i class="fas fa-code"></i> CF Platform
         </a>
-        <div class="nav-links">
+        <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="nav-links" id="navLinks">
             <a href="/profile.html" class="nav-link active">
                 <i class="fas fa-tasks"></i> Tasks
             </a>
@@ -860,6 +1059,32 @@
     function showPrivacyPolicy() {
       alert('CF Platform respects your privacy. We do not share your personal information with third parties without your consent.');
     }
+
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+      const navLinks = document.getElementById('navLinks');
+      const menuToggle = document.querySelector('.mobile-menu-toggle i');
+
+      navLinks.classList.toggle('mobile-open');
+
+      // Change icon
+      if (navLinks.classList.contains('mobile-open')) {
+        menuToggle.className = 'fas fa-times';
+      } else {
+        menuToggle.className = 'fas fa-bars';
+      }
+    }
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+      const navLinks = document.getElementById('navLinks');
+      const menuToggle = document.querySelector('.mobile-menu-toggle');
+
+      if (!navLinks.contains(event.target) && !menuToggle.contains(event.target)) {
+        navLinks.classList.remove('mobile-open');
+        document.querySelector('.mobile-menu-toggle i').className = 'fas fa-bars';
+      }
+    });
 
     // Logout function
     function logout() {

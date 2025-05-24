@@ -444,6 +444,35 @@ function cancelEdit() {
     showToast('info', 'Edit Cancelled', 'Task editing has been cancelled.');
 }
 
+// Mobile sidebar toggle
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.querySelector('.mobile-menu-toggle i');
+
+    sidebar.classList.toggle('mobile-open');
+
+    // Change icon
+    if (sidebar.classList.contains('mobile-open')) {
+        menuToggle.className = 'fas fa-times';
+    } else {
+        menuToggle.className = 'fas fa-bars';
+    }
+}
+
+// Close mobile sidebar when clicking outside
+document.addEventListener('click', function(event) {
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+
+    if (window.innerWidth <= 768 &&
+        !sidebar.contains(event.target) &&
+        !menuToggle.contains(event.target) &&
+        sidebar.classList.contains('mobile-open')) {
+        sidebar.classList.remove('mobile-open');
+        document.querySelector('.mobile-menu-toggle i').className = 'fas fa-bars';
+    }
+});
+
 // Выход из системы
 function logout() {
     showToast('info', 'Logging Out', 'You are being logged out...');

@@ -118,6 +118,21 @@
             font-size: 1.2rem;
         }
 
+        /* Mobile Menu */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .nav-links.mobile-open {
+            display: flex;
+        }
+
         /* Main Content */
         .main-content {
             flex: 1;
@@ -492,25 +507,213 @@
         }
 
         /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .tasks-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 15px;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 15px;
+            }
+        }
+
         @media (max-width: 768px) {
             .navbar-container {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                box-shadow: var(--box-shadow);
                 flex-direction: column;
+                padding: 20px;
                 gap: 15px;
+                z-index: 1000;
+            }
+
+            .nav-links.mobile-open {
+                display: flex;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
             }
 
             .controls-container {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 15px;
+            }
+
+            .search-container {
+                min-width: auto;
             }
 
             .filter-container {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 10px;
+            }
+
+            .filter-select {
+                min-width: auto;
+            }
+
+            .tasks-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .task-card {
+                margin: 0;
+            }
+
+            .task-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+
+            .pagination-btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
             }
 
             .footer-content {
                 flex-direction: column;
                 text-align: center;
+                gap: 15px;
+            }
+
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
+            }
+
+            .main-content {
+                padding: 20px 0;
+            }
+
+            .navbar {
+                padding: 10px 0;
+            }
+
+            .logo {
+                font-size: 1.3rem;
+            }
+
+            .nav-link {
+                font-size: 0.9rem;
+            }
+
+            .user-avatar {
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.3rem;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-icon {
+                font-size: 1.5rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .controls-container {
+                padding: 15px;
+                gap: 10px;
+            }
+
+            .search-input {
+                padding: 10px 12px 10px 40px;
+                font-size: 0.9rem;
+            }
+
+            .filter-select {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+
+            .task-card {
+                border-radius: 6px;
+            }
+
+            .task-header {
+                padding: 15px;
+            }
+
+            .task-title {
+                font-size: 1.1rem;
+            }
+
+            .task-body {
+                padding: 15px;
+            }
+
+            .task-footer {
+                padding: 12px 15px;
+            }
+
+            .solve-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+
+            .pagination-btn {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+
+            .page-info {
+                padding: 6px 10px;
+                font-size: 0.8rem;
             }
         }
 
@@ -531,7 +734,10 @@
             <a href="/profile.html" class="logo">
                 <i class="fas fa-code"></i> CF Platform
             </a>
-            <div class="nav-links">
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="nav-links" id="navLinks">
                 <a href="/profile.html" class="nav-link active">
                     <i class="fas fa-tasks"></i> Tasks
                 </a>
@@ -926,6 +1132,32 @@
                 </div>
             `;
         }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            const menuToggle = document.querySelector('.mobile-menu-toggle i');
+
+            navLinks.classList.toggle('mobile-open');
+
+            // Change icon
+            if (navLinks.classList.contains('mobile-open')) {
+                menuToggle.className = 'fas fa-times';
+            } else {
+                menuToggle.className = 'fas fa-bars';
+            }
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const navLinks = document.getElementById('navLinks');
+            const menuToggle = document.querySelector('.mobile-menu-toggle');
+
+            if (!navLinks.contains(event.target) && !menuToggle.contains(event.target)) {
+                navLinks.classList.remove('mobile-open');
+                document.querySelector('.mobile-menu-toggle i').className = 'fas fa-bars';
+            }
+        });
 
         // Logout function
         function logout() {
