@@ -607,7 +607,7 @@
                   <i class="fas ${scoreIcon}"></i> ${solution.score}/100
                 </div>
               ` : `
-                <div class="score-badge">
+                <div class="score-badge" id="score-${solution.id}">
                   <i class="fas fa-spinner fa-spin"></i> Evaluating...
                 </div>
               `}
@@ -661,6 +661,79 @@
 
       // Trigger Prism to highlight the code
       Prism.highlightAll();
+
+      // Start checking for pending solution if needed
+      if (!solution.score) {
+        checkPendingSolution(solution.id);
+      }
+    }
+
+    // Check for pending solution and update its status
+    function checkPendingSolution(solutionId) {
+      const scoreElement = document.getElementById(`score-${solutionId}`);
+
+      if (!scoreElement) return;
+
+      const checkStatus = async () => {
+        try {
+          const response = await fetch(`/api/solutions/${solutionId}/status`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+
+          if (response.ok) {
+            const solution = await response.json();
+
+            if (solution.score !== null) {
+              // Update the score display
+              let scoreClass = 'score-medium';
+              let scoreIcon = 'fa-star-half-alt';
+
+              if (solution.score >= 80) {
+                scoreClass = 'score-high';
+                scoreIcon = 'fa-star';
+              } else if (solution.score < 60) {
+                scoreClass = 'score-low';
+                scoreIcon = 'fa-exclamation-circle';
+              }
+
+              scoreElement.innerHTML = `
+                <i class="fas ${scoreIcon}"></i> ${solution.score}/100
+              `;
+              scoreElement.className = `score-badge ${scoreClass}`;
+              scoreElement.removeAttribute('id');
+
+              // Update feedback if available
+              if (solution.feedback && !document.querySelector('.feedback-container')) {
+                const solutionBody = document.querySelector('.solution-body');
+                const feedbackHTML = `
+                  <h3 class="section-title">
+                    <i class="fas fa-robot"></i> AI Feedback
+                  </h3>
+                  <div class="feedback-container">
+                    <div class="feedback-content">${escapeHtml(solution.feedback)}</div>
+                  </div>
+                `;
+
+                // Insert feedback before task description
+                const taskSection = solutionBody.querySelector('.task-description').parentElement;
+                taskSection.insertAdjacentHTML('beforebegin', feedbackHTML);
+              }
+
+              return; // Stop checking
+            }
+          }
+        } catch (error) {
+          console.error('Error checking solution status:', error);
+        }
+
+        // Continue checking after 3 seconds
+        setTimeout(checkStatus, 3000);
+      };
+
+      // Start checking
+      setTimeout(checkStatus, 3000);
     }
 
     // Copy code to clipboard

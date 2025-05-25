@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -643,6 +643,28 @@ app.get('/api/check-solved', checkAuth, async (req, res) => {
       res.status(500).json({ error: 'Server error' });
   }
 });
+
+// Get solution status by ID
+app.get('/api/solutions/:id/status', checkAuth, async (req, res) => {
+  try {
+      const { id } = req.params;
+
+      const result = await pool.query(`
+          SELECT id, status, score, feedback, evaluated_at
+          FROM solutions
+          WHERE id = $1 AND user_id = $2
+      `, [id, req.user.id]);
+
+      if (result.rows.length === 0) {
+          return res.status(404).json({ error: 'Solution not found' });
+      }
+
+      res.json(result.rows[0]);
+  } catch (err) {
+      console.error('Error getting solution status:', err);
+      res.status(500).json({ error: 'Server error' });
+  }
+});
 //ChatGPT integration
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -672,7 +694,7 @@ async function evaluateWithGPT(code, language, taskContent) {
 
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4.1",
+      model: "gpt-4",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.2,
     });

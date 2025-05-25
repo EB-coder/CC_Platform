@@ -530,7 +530,7 @@
                                     <i class="fas ${scoreIcon}"></i> Score: ${solution.score}/100
                                 </div>
                             ` : `
-                                <div class="solution-score">
+                                <div class="solution-score" id="score-${solution.id}">
                                     <i class="fas fa-spinner fa-spin"></i> Evaluating...
                                 </div>
                             `}
@@ -565,6 +565,57 @@
                     </div>
                 `;
             }).join('');
+
+            // Start checking for pending solutions
+            checkPendingSolutions();
+        }
+
+        // Check for pending solutions and update their status
+        function checkPendingSolutions() {
+            const pendingElements = document.querySelectorAll('[id^="score-"]');
+
+            pendingElements.forEach(async (element) => {
+                const solutionId = element.id.replace('score-', '');
+
+                try {
+                    const response = await fetch(`/api/solutions/${solutionId}/status`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const solution = await response.json();
+
+                        if (solution.score !== null) {
+                            // Update the score display
+                            let scoreClass = 'score-medium';
+                            let scoreIcon = 'fa-star-half-alt';
+
+                            if (solution.score >= 80) {
+                                scoreClass = 'score-high';
+                                scoreIcon = 'fa-star';
+                            } else if (solution.score < 60) {
+                                scoreClass = 'score-low';
+                                scoreIcon = 'fa-exclamation-circle';
+                            }
+
+                            element.innerHTML = `
+                                <i class="fas ${scoreIcon}"></i> Score: ${solution.score}/100
+                            `;
+                            element.className = `solution-score ${scoreClass}`;
+                            element.removeAttribute('id'); // Remove ID to stop checking
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking solution status:', error);
+                }
+            });
+
+            // Continue checking if there are still pending solutions
+            if (document.querySelectorAll('[id^="score-"]').length > 0) {
+                setTimeout(checkPendingSolutions, 3000);
+            }
         }
 
         // Navigate to solution details page
